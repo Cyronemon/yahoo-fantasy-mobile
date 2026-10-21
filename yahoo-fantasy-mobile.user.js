@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Yahoo Fantasy Basketball – Mobile
 // @namespace    https://github.com/Cyronemon/yahoo-fantasy-mobile
-// @version      0.2.1
+// @version      0.2.2
 // @description  Compact phone layout for the Yahoo Fantasy Basketball desktop site. Restyles Yahoo's own page; no API calls, no background fetches.
 // @homepageURL  https://github.com/Cyronemon/yahoo-fantasy-mobile
 // @updateURL    https://raw.githubusercontent.com/Cyronemon/yahoo-fantasy-mobile/main/yahoo-fantasy-mobile.user.js
@@ -55,6 +55,8 @@ html.ym-on {
   --ym-accent: #7d2eff;
   --ym-line: color-mix(in srgb, currentColor 14%, transparent);
   --ym-faint: color-mix(in srgb, currentColor 58%, transparent);
+  /* fixed (not currentColor) so dividers look the same next to faded "-" cells */
+  --ym-sep: color-mix(in srgb, var(--ym-fg, #232a31) 18%, transparent);
   --ym-bar-h: 44px;
   -moz-text-size-adjust: none; -webkit-text-size-adjust: none; text-size-adjust: none;
 }
@@ -264,6 +266,7 @@ html.ym-on table.ym-roster [data-ym="hide"] { display: none !important; }
 
 /* header labels */
 html.ym-on table.ym-roster th { font-size: 10px; font-weight: 700; letter-spacing: .02em; color: var(--ym-faint); padding: 7px 0 6px !important; white-space: nowrap; }
+html.ym-on table.ym-roster th[data-ym="stat"] { text-align: center !important; }
 html.ym-on table.ym-roster th a { color: inherit !important; }
 html.ym-on table.ym-roster th[data-ym="pos"] { grid-column: 1; }
 html.ym-on table.ym-roster th[data-ym="player"] { display: none; text-align: left; padding-left: 6px !important; }
@@ -305,10 +308,14 @@ html.ym-on table.ym-roster .ysf-player-detail[data-ym-opp]:not(:has(.ysf-game-st
 
 /* stat line */
 html.ym-on table.ym-roster td[data-ym="stat"] {
-  padding: 1px 0 7px !important; font-size: 12px; font-variant-numeric: tabular-nums;
+  padding: 1px 0 7px !important; font-size: 12px; font-variant-numeric: tabular-nums; text-align: center !important;
   white-space: nowrap; overflow: hidden; text-overflow: clip;
 }
 html.ym-on table.ym-roster td[data-ym="stat"].ym-empty { color: var(--ym-faint); }
+/* short faint line between stat columns (a dot would read like the decimal in .474) */
+html.ym-on table.ym-roster [data-ym="stat"] ~ [data-ym="stat"] {
+  background: linear-gradient(var(--ym-sep), var(--ym-sep)) left center / 1px 14px no-repeat !important;
+}
 
 /* lineup totals */
 html.ym-on table.ym-roster > tfoot > tr { border-top: 2px solid color-mix(in srgb, currentColor 28%, transparent); }
@@ -371,8 +378,38 @@ html.ym-on #player-note-content .player-sidebar {
 }
 html.ym-on #player-note-content .close-card + div ul { display: flex !important; gap: 6px; width: max-content; }
 html.ym-on #player-note-content .close-card + div li { flex: none; margin: 0 !important; }
-/* "Rostered By" box covers the player photo at phone width */
-html.ym-on #player-note-content section.roster-status { display: none !important; }
+/* "Rostered By" box: compact card in the empty space beside the rank, clear of the photo.
+   Rows: owner (logo, team) + % rostered, then the action button (Drop/Add/...) + watch star. */
+html.ym-on #player-note-content section.roster-status {
+  /* photo column is 160px and the rank ends ~192px in, so start just past it */
+  position: absolute !important; left: 200px; right: 8px; bottom: 8px; z-index: 2;
+  width: auto !important; height: auto !important; padding: 0 !important;
+}
+html.ym-on #player-note-content section.roster-status > div {
+  /* owner name gets room first; "% Rostered" shrinks if space runs out */
+  display: grid !important; grid-template-columns: minmax(0, max-content) minmax(0, 1fr); grid-template-areas: "owner pct" "actions actions";
+  align-items: center; gap: 4px 8px; width: auto !important; height: auto !important;
+  padding: 6px 6px 6px 8px !important; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.25);
+}
+html.ym-on #player-note-content section.roster-status > div > div:first-child {
+  grid-area: owner; padding: 0 !important; align-items: center; min-width: 0; font-size: 12px !important;
+}
+html.ym-on #player-note-content section.roster-status > div > div:first-child img { width: 22px !important; height: 22px !important; flex: none; }
+html.ym-on #player-note-content section.roster-status > div > div:first-child > div { padding-left: 6px !important; min-width: 0; }
+html.ym-on #player-note-content section.roster-status > div > div:first-child > div > div { display: none; } /* "Rostered By" label */
+html.ym-on #player-note-content section.roster-status > div > div:first-child a {
+  display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700;
+}
+html.ym-on #player-note-content section.roster-status > div > div:last-child {
+  grid-area: pct; margin: 0 !important; padding: 0 !important; background: none !important;
+  font-size: 10px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; opacity: .7;
+}
+html.ym-on #player-note-content section.roster-status .actions { grid-area: actions; margin: 0 !important; gap: 6px; }
+html.ym-on #player-note-content section.roster-status .roster-actions { height: auto !important; }
+html.ym-on #player-note-content section.roster-status .actions > * > *,
+html.ym-on #player-note-content section.roster-status .actions > button { padding-top: 4px !important; padding-bottom: 4px !important; }
+html.ym-on #player-note-content section.roster-status .actions span { font-size: 12px !important; }
+html.ym-on #player-note-content section.roster-status .actions > button { width: 30px; height: 30px; padding: 4px !important; flex: none; }
 /* main column: let the whole sheet scroll instead of the inner panes */
 html.ym-on #player-note-content .close-card + div + div { width: auto !important; overflow: visible !important; }
 html.ym-on #player-note-content .close-card + div + div > div,
