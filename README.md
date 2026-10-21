@@ -40,6 +40,16 @@ Target setup: Firefox for Android + Violentmonkey + uBlock Origin, "Desktop site
   your team, and remembers your pick while you switch days
 - League scoreboard at the bottom: one aligned line per matchup (logo, name, record, score)
 
+## What works on the Players page
+
+- Full-width search, position chips that scroll sideways, "Show my team", and the four
+  dropdowns (Status, NBA Teams, Fantasy Teams, Stats) as a 2 x 2 grid
+- Each player: a big green + (Yahoo's own Add button) with the watch star under it; name,
+  injury badge, team/positions and game result; then roster status (FA / waivers date),
+  current rank and % rostered; then the 9 categories under a sticky header
+- Changing a filter reloads the table in place; the layout re-applies
+- Previous / Next 25 as buttons; the icon legend is hidden
+
 Other Yahoo pages are left untouched for now.
 
 ## Install on the phone
@@ -78,7 +88,7 @@ Still to check on the device:
 
 ## Roadmap
 
-1. Restyle: My Team and Matchup done. Next: Players (free agents), League pages.
+1. Restyle: My Team, Matchup and Players done. Next: League page.
 2. Analysis from tables already on the page: matchup category status (safe/swing/lost),
    punt-adjusted totals from the Standard Deviations tab, free-agent "fit" column,
    lineup flags (Questionable/Doubtful starters, Out players in active slots).

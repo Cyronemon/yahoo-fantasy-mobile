@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Yahoo Fantasy Basketball – Mobile
 // @namespace    https://github.com/Cyronemon/yahoo-fantasy-mobile
-// @version      0.3.1
+// @version      0.4.0
 // @description  Compact phone layout for the Yahoo Fantasy Basketball desktop site. Restyles Yahoo's own page; no API calls, no background fetches.
 // @homepageURL  https://github.com/Cyronemon/yahoo-fantasy-mobile
 // @updateURL    https://raw.githubusercontent.com/Cyronemon/yahoo-fantasy-mobile/main/yahoo-fantasy-mobile.user.js
@@ -40,6 +40,7 @@
   const PAGES = [
     ['team', /^\/nba\/(\d+)\/(\d+)(?:\/team)?\/?$/], // /nba/<league>/<team>
     ['matchup', /^\/nba\/(\d+)\/matchup\/?$/],       // /nba/<league>/matchup?week=&mid1=&mid2=
+    ['players', /^\/nba\/(\d+)\/players\/?$/],       // /nba/<league>/players (free agents, filters in the query)
   ];
   let page = null;
   let pathMatch = null;
@@ -485,6 +486,66 @@ html.ym-on table.ym-mu-roster td[data-ym="pos"] {
 }
 html.ym-on table.ym-mu-roster { border: 0 !important; }
 
+/* ---- Players page (free agents) ---- */
+html.ym-on.ym-page-players #page-header { margin: 0 !important; padding: 10px 8px 0 !important; }
+html.ym-on.ym-page-players #page-header h1 { font-size: 20px !important; margin: 0 !important; }
+html.ym-on #playersearch, html.ym-on #playerfilter { padding-left: 8px !important; padding-right: 8px !important; }
+/* search: full width */
+html.ym-on #playersearch, html.ym-on #playersearch * { width: auto !important; }
+html.ym-on #playersearch .Control-inline { display: block !important; margin-top: 8px; }
+html.ym-on #playersearch form { display: flex !important; }
+html.ym-on #playersearch input { flex: 1; min-width: 0; font-size: 16px !important; } /* 16px: no zoom-on-focus */
+/* position chips scroll sideways; "Show my team" under them */
+html.ym-on #pos_filter_row { display: flex !important; flex-direction: column; gap: 6px; }
+html.ym-on #pos_filter_row > div { display: block !important; margin: 0 !important; width: auto !important; max-width: 100%; }
+html.ym-on #pos_filter_row .Control-label { display: none !important; }
+html.ym-on #posfilter { overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap !important; margin-top: 8px !important; }
+html.ym-on #posfilter label { flex: none; padding: 6px 12px !important; font-size: 12px !important; }
+/* the four dropdowns: 2 x 2 */
+html.ym-on #playerfilter .selects { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: 10px !important; }
+html.ym-on #playerfilter .selects > div { width: auto !important; margin: 0 !important; min-width: 0; }
+html.ym-on #playerfilter .selects select { min-width: 0 !important; }
+html.ym-on #playerfilter :is(form, fieldset, .yui3-widget) { min-width: 0 !important; width: auto !important; } /* fieldset defaults to min-content */
+html.ym-on #playerfilter .selects > div:empty,
+html.ym-on #playerfilter .selects > div:not(:has(select)) { display: none !important; }
+html.ym-on #playerfilter .selects select { width: 100% !important; max-width: none !important; height: 36px !important; font-size: 13px !important; }
+html.ym-on #playerfilter .selects .Control-label { font-size: 11px !important; }
+/* player rows: [+ / star] | name line, status line, 9-category line */
+html.ym-on #players-table-wrapper, html.ym-on #players-table-wrapper .players { overflow: visible !important; width: auto !important; }
+html.ym-on table.ym-fa > tbody > tr { grid-template-rows: auto auto auto; }
+html.ym-on table.ym-fa td[data-ym="add"] { grid-column: 1; grid-row: 1 / span 2; justify-self: center; align-self: center; }
+html.ym-on table.ym-fa td[data-ym="watch"] { grid-column: 1; grid-row: 3; justify-self: center; align-self: center; }
+html.ym-on table.ym-fa td[data-ym="add"] a {
+  display: flex !important; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%;
+  font-size: 18px !important; background: color-mix(in srgb, #1a9f53 16%, transparent);
+}
+html.ym-on table.ym-fa td[data-ym="watch"] a { display: flex !important; align-items: center; justify-content: center; width: 30px; height: 26px; font-size: 15px !important; }
+html.ym-on table.ym-fa td[data-ym="player"] { grid-row: 1; padding-bottom: 0 !important; }
+html.ym-on table.ym-fa td[data-ym="status"],
+html.ym-on table.ym-fa td[data-ym="rank"],
+html.ym-on table.ym-fa td[data-ym="ros"] {
+  grid-row: 2; text-align: left !important; padding: 0 0 2px 6px !important; font-size: 11px; color: var(--ym-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+html.ym-on table.ym-fa td[data-ym="status"] { grid-column: 2 / span 3; font-weight: 700; }
+html.ym-on table.ym-fa td[data-ym="rank"] { grid-column: 5 / span 3; }
+html.ym-on table.ym-fa td[data-ym="ros"] { grid-column: 8 / span 3; }
+html.ym-on table.ym-fa :is(td[data-ym="status"], td[data-ym="rank"], td[data-ym="ros"]) * { display: inline !important; }
+html.ym-on table.ym-fa td[data-ym="rank"]::before { content: "Rank "; }
+html.ym-on table.ym-fa td[data-ym="ros"]::after { content: " rostered"; }
+html.ym-on table.ym-fa td[data-ym="stat"] { grid-row: 3; }
+/* header: only the category labels (col 1 kept as a spacer) */
+html.ym-on table.ym-fa > thead [data-ym]:not([data-ym="stat"]):not([data-ym="add"]) { display: none !important; }
+html.ym-on table.ym-fa > thead [data-ym="add"] { grid-column: 1; grid-row: 1; font-size: 0 !important; }
+/* paging */
+html.ym-on #players-table > .Grid-spread-mid { display: flex !important; justify-content: center; padding: 12px 8px !important; }
+html.ym-on #players-table > .Grid-spread-mid > :not(:has(.pagingnavlist)) { display: none !important; } /* icon legend */
+html.ym-on .pagingnavlist { display: flex !important; gap: 10px; white-space: nowrap; }
+html.ym-on .pagingnavlist li { margin: 0 !important; display: flex !important; align-items: center; }
+html.ym-on .pagingnavlist li:not(:has(a)) { padding: 8px 16px; opacity: .45; font-size: 13px; } /* disabled "Previous 25" */
+html.ym-on .pagingnavlist a {
+  display: block; padding: 8px 16px; border: 1px solid var(--ym-line); border-radius: 18px; font-size: 13px; text-decoration: none !important;
+}
+
 /* Player card (Yahoo's YUI modal): full screen, one scrolling column.
    Inside: close button, avatar rail, main column (hero, tabs, tables), news column. */
 html.ym-on .yui3-overlay:has(#react-playernote-overlay) {
@@ -725,7 +786,7 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
     const nav = el('nav', { 'aria-label': 'League' },
       el('a', { href: `/nba/${leagueId}/${own}`, class: teamId === own ? 'ym-cur' : null }, 'My Team'),
       el('a', { href: matchupHref(), class: page === 'matchup' ? 'ym-cur' : null }, 'Matchup'),
-      el('a', { href: `/nba/${leagueId}/players` }, 'Players'),
+      el('a', { href: `/nba/${leagueId}/players`, class: page === 'players' ? 'ym-cur' : null }, 'Players'),
       el('a', { href: `/nba/${leagueId}` }, 'League'),
     );
     const leagues = el('button', {
@@ -1152,6 +1213,51 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
   }
 
   // ---------------------------------------------------------------------------
+  // Players page (free agents)
+  // ---------------------------------------------------------------------------
+  // Columns: add (+), watch (star), player, opp, roster status, GP, ranks,
+  // % rostered, minutes, then stats. Keep add/watch, status, current rank,
+  // % rostered and the 9 categories; hide the rest.
+  function enhancePlayers() {
+    const table = $('#players-table-wrapper table');
+    const slots = table && headerSlots(table);
+    if (!slots) return;
+    const head = table.tHead;
+    const groups = [];
+    if (head.rows.length > 1) {
+      for (const cell of head.rows[head.rows.length - 2].cells) {
+        for (let i = 0; i < cell.colSpan; i++) groups.push(text(cell));
+      }
+    }
+    const playerSlot = slots.findIndex(s => /^players?$/i.test(s.label));
+    let actions = 0;
+    const kinds = slots.map((s, i) => {
+      const label = s.label;
+      if (i === playerSlot) return 'player';
+      if (!label && i < playerSlot) return ['add', 'watch'][actions++] || 'hide';
+      if (/^opp/i.test(label)) return 'opp';
+      if (/roster status/i.test(label)) return 'status';
+      if (/^rank/i.test(groups[i] || '') && /^current$/i.test(label)) return 'rank';
+      if (/^%\s*ros/i.test(label)) return 'ros';
+      if (CATS.includes(label.toUpperCase())) return 'stat';
+      return 'hide';
+    });
+    markCells(table, kinds.map(kind => ({ kind: kind === 'opp' ? 'hide' : kind })));
+    table.classList.add('ym-roster', 'ym-fa');
+    table.style.setProperty('--ym-n', String(kinds.filter(k => k === 'stat').length || 9));
+
+    // Show the opponent next to the name when Yahoo has no game-status text.
+    const oppSlot = kinds.indexOf('opp');
+    for (const body of table.tBodies) {
+      for (const row of body.rows) {
+        const detail = row.querySelector('td[data-ym="player"] .ysf-player-detail');
+        const opp = oppSlot >= 0 && row.cells[oppSlot] ? text(row.cells[oppSlot]) : '';
+        if (detail) setAttr(detail, 'data-ym-opp', opp && !text(detail) ? opp : null);
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Boot
   // ---------------------------------------------------------------------------
   let pending = false;
@@ -1174,6 +1280,8 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
       enhanceRoster();
     } else if (page === 'matchup') {
       enhanceMatchup();
+    } else if (page === 'players') {
+      enhancePlayers();
     }
     syncThemeColors();
   }
