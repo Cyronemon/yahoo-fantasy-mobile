@@ -1,0 +1,4 @@
+.DS_Store
+# Saved Yahoo pages contain league, team and manager names; keep them local.
+fixtures/*.html
+.claude/settings.local.json
