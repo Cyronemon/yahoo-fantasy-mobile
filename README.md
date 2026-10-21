@@ -8,11 +8,18 @@ Target setup: Firefox for Android + Violentmonkey + uBlock Origin, "Desktop site
 
 ## What works now (My Team page)
 
-- Compact top bar: My Team · Matchup · Players · League · ⚙
+- Compact top bar: 🏀 · My Team · Matchup · Players · League · ⚙
+- 🏀 switches between your basketball leagues. On tap it opens Yahoo's own "My Teams & Leagues"
+  menu behind the scenes (the same thing hovering "Fantasy Basketball" does on desktop) and
+  lists your teams; the list is kept in storage so it shows instantly next time
+- Tap your team name for the league's teams, with your current opponent pinned on top.
+  Their page gets the same layout, so you can check how their players did today
+- Player cards (tap a player name) open full screen: avatar strip, stats tabs with
+  sideways-scrolling tables, and news below, with the empty ad slot removed
 - One block per player: position chip, name, team/positions, injury badge, game status, and the
   9 categories (FG%, FT%, 3PTM, PTS, REB, AST, ST, BLK, TO) on a line under a sticky header
 - Players with no game on the selected date collapse to one dimmed line (⚙ → "Show stats" to expand)
-- Team card shrunk to one summary line (tap the team name to open Yahoo's full card)
+- Team card shrunk to one summary line (Yahoo's full card is still one tap away in the teams list)
 - Ads, ad space, footer, legend and chat button hidden
 - Yahoo's real buttons and links stay in place, restyled: date arrows, stat tabs,
   Start Active Players, Add/Drop, and tap-a-row lineup swaps
@@ -47,13 +54,13 @@ Routes for new fixtures go in the `ROUTES` table in `dev/serve.mjs`.
 
 ## Not yet verified on a real phone
 
-Checked against the saved page in a phone-sized browser only. Yahoo's page scripts are not part of
-the saved page, so these need a check on the device:
+The layout works on the phone (confirmed 2026-10-21). The league switcher, teams list and player card
+were tested on the live site in desktop Chrome at phone width, not yet on the phone itself.
+Still to check on the device:
 
 - Lineup swaps (tap a row, tap the target row) and the swap highlight colours
-- Player-note popups (tapping a player name)
 - Stat-tab switching (Yahoo loads it in place; the script re-applies on every update)
-- Text scale with "Desktop site" on (auto-detected; adjust with ⚙ → Text size if it's off)
+- 🏀 league list loading on Firefox for Android (it relies on Yahoo's hover menu)
 
 ## Roadmap
 

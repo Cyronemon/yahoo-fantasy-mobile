@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Yahoo Fantasy Basketball – Mobile
 // @namespace    https://github.com/Cyronemon/yahoo-fantasy-mobile
-// @version      0.1.0
+// @version      0.2.0
 // @description  Compact phone layout for the Yahoo Fantasy Basketball desktop site. Restyles Yahoo's own page; no API calls, no background fetches.
 // @homepageURL  https://github.com/Cyronemon/yahoo-fantasy-mobile
 // @updateURL    https://raw.githubusercontent.com/Cyronemon/yahoo-fantasy-mobile/main/yahoo-fantasy-mobile.user.js
@@ -20,19 +20,18 @@
   // Settings (browser storage only)
   // ---------------------------------------------------------------------------
   const STORE_KEY = 'ym:settings';
+  const LEAGUES_KEY = 'ym:leagues'; // [{ path, team, league, score, vs }] from Yahoo's league menu
   const DEFAULTS = { on: true, scale: 1, idle: 'collapse' };
 
-  function loadSettings() {
-    try {
-      return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(STORE_KEY) || '{}') };
-    } catch {
-      return { ...DEFAULTS };
-    }
+  function readJSON(key, fallback) {
+    try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
   }
-  let settings = loadSettings();
-  function saveSettings() {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(settings)); } catch { /* storage blocked */ }
+  function writeJSON(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage blocked */ }
   }
+
+  let settings = { ...DEFAULTS, ...readJSON(STORE_KEY, {}) };
+  const saveSettings = () => writeJSON(STORE_KEY, settings);
 
   // ---------------------------------------------------------------------------
   // Page detection
@@ -42,6 +41,8 @@
   const teamMatch = location.pathname.match(TEAM_PATH);
   if (!teamMatch) return; // Other pages are left untouched for now.
   const [, leagueId, teamId] = teamMatch;
+  // Per-league memory: { own: my team id, opp: current opponent id, mu: matchup link }
+  const LEAGUE_KEY = `ym:league:${leagueId}`;
 
   const html = document.documentElement;
   const CATS = ['FG%', 'FT%', '3PTM', 'PTS', 'REB', 'AST', 'ST', 'BLK', 'TO'];
@@ -92,7 +93,7 @@ html.ym-on .Page-bd::after { display: none !important; }
 html.ym-on #yspcontentmainhero { padding: 0 !important; margin: 0 !important; width: auto !important; }
 
 /* Top bar */
-#ym-bar, #ym-summary, #ym-sheet, #ym-pill { display: none; }
+#ym-bar, #ym-summary, .ym-sheet, #ym-pill { display: none; }
 html.ym-on #ym-bar {
   display: flex; align-items: center; gap: 2px;
   position: sticky; top: 0; z-index: 9000; /* below Yahoo's own overlays (10000+) */
@@ -111,6 +112,8 @@ html.ym-on #ym-bar {
   flex: none; width: 40px; height: 40px; border: 0; background: none; color: inherit;
   font-size: 20px; line-height: 1; cursor: pointer; padding: 0;
 }
+#ym-bar .ym-lg { width: auto; padding: 0 4px; font-size: 18px; }
+#ym-bar .ym-lg::after { content: "▾"; font-size: 11px; margin-left: 1px; color: var(--ym-faint); }
 
 /* Team summary (replaces the large team card) */
 html.ym-on #ym-summary {
@@ -123,8 +126,8 @@ html.ym-on #ym-summary {
   cursor: pointer; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 #ym-summary .ym-team::after { content: " ▾"; font-size: 11px; color: var(--ym-faint); }
-html.ym-show-card #ym-summary .ym-team::after { content: " ▴"; }
 #ym-summary .ym-rec { font-size: 12px; color: var(--ym-faint); white-space: nowrap; }
+#ym-summary .ym-tag { align-self: center; }
 #ym-summary .ym-mu {
   grid-area: mu; display: inline-flex; align-items: center; gap: 6px;
   padding: 5px 10px; border-radius: 14px; border: 1px solid var(--ym-line);
@@ -134,25 +137,46 @@ html.ym-show-card #ym-summary .ym-team::after { content: " ▴"; }
 #ym-summary .ym-notes { grid-area: notes; font-size: 11px; color: var(--ym-faint); }
 html.ym-on:not(.ym-show-card) #teamnotes.ym-compacted { display: none !important; }
 
-/* Settings sheet */
-html.ym-on #ym-sheet:not([hidden]) {
+/* Popup sheets: settings, leagues, league teams */
+html.ym-on .ym-sheet:not([hidden]) {
   display: block; position: fixed; z-index: 9001; top: var(--ym-bar-h); right: 6px; left: 6px;
-  max-width: 360px; margin-left: auto; padding: 12px; box-sizing: border-box;
+  max-width: 360px; max-height: calc(100% - var(--ym-bar-h) - 12px); overflow-y: auto;
+  margin-left: auto; padding: 12px; box-sizing: border-box; text-align: left;
   background: var(--ym-bg, #fff); color: var(--ym-fg, #232a31);
   border: 1px solid var(--ym-line); border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.25);
   font: 14px/1.3 "YahooSans VF", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
-#ym-sheet .ym-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; }
-#ym-sheet .ym-row + .ym-row { border-top: 1px solid var(--ym-line); }
-#ym-sheet .ym-seg { display: inline-flex; border: 1px solid var(--ym-line); border-radius: 8px; overflow: hidden; }
-#ym-sheet .ym-seg button, #ym-sheet .ym-btn {
+html.ym-on .ym-sheet.ym-start:not([hidden]) { margin-left: 0; margin-right: auto; }
+.ym-sheet h3 { margin: 2px 4px 6px; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ym-faint); }
+.ym-sheet .ym-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; }
+.ym-sheet .ym-row + .ym-row { border-top: 1px solid var(--ym-line); }
+.ym-sheet .ym-seg { display: inline-flex; border: 1px solid var(--ym-line); border-radius: 8px; overflow: hidden; }
+.ym-sheet .ym-seg button, .ym-sheet .ym-btn {
   min-width: 36px; height: 32px; padding: 0 10px; border: 0; background: none; color: inherit;
   font: inherit; font-size: 13px; cursor: pointer;
 }
-#ym-sheet .ym-seg button + button { border-left: 1px solid var(--ym-line); }
-#ym-sheet .ym-seg button[aria-pressed="true"] { background: var(--ym-accent); color: #fff; }
-#ym-sheet .ym-btn { border: 1px solid var(--ym-line); border-radius: 8px; }
-#ym-sheet .ym-val { min-width: 48px; text-align: center; font-variant-numeric: tabular-nums; }
+.ym-sheet .ym-seg button + button { border-left: 1px solid var(--ym-line); }
+.ym-sheet .ym-seg button[aria-pressed="true"] { background: var(--ym-accent); color: #fff; }
+.ym-sheet .ym-btn { border: 1px solid var(--ym-line); border-radius: 8px; }
+.ym-sheet .ym-val { min-width: 48px; text-align: center; font-variant-numeric: tabular-nums; }
+.ym-sheet .ym-list a {
+  display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-radius: 8px;
+  color: inherit !important; text-decoration: none !important;
+}
+.ym-sheet .ym-list a + a { border-top: 1px solid var(--ym-line); }
+.ym-sheet .ym-list a[aria-current] { background: color-mix(in srgb, var(--ym-accent) 10%, transparent); }
+.ym-sheet .ym-list a.ym-opp { background: color-mix(in srgb, #ff7a00 14%, transparent); }
+.ym-sheet .ym-main { flex: 1; min-width: 0; }
+.ym-sheet .ym-main b, .ym-sheet .ym-main small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ym-sheet small { font-size: 12px; color: var(--ym-faint); }
+.ym-sheet .ym-side { flex: none; text-align: right; }
+.ym-sheet .ym-hint { margin: 8px 4px 2px; font-size: 12px; color: var(--ym-faint); }
+.ym-sheet .ym-foot { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--ym-line); text-align: center; }
+.ym-tag {
+  flex: none; padding: 2px 6px; border-radius: 6px; font-size: 10px; font-weight: 700; letter-spacing: .03em;
+  text-transform: uppercase; background: var(--ym-accent); color: #fff; white-space: nowrap;
+}
+.ym-tag.ym-opp-tag { background: #e86a00; }
 
 /* Floating switch shown while the mobile layout is off */
 html:not(.ym-on) #ym-pill {
@@ -318,6 +342,58 @@ html.ym-on.ym-wide table.ym-roster td[data-ym="player"] { grid-column: 2; paddin
 html.ym-on.ym-wide table.ym-roster th[data-ym="player"] { display: block !important; grid-column: 2; }
 html.ym-on.ym-wide table.ym-roster td[data-ym="stat"] { padding: 6px 0 !important; }
 html.ym-on.ym-wide:not(.ym-idle-show) table.ym-roster tr.ym-idle td[data-ym="stat"] { display: block !important; visibility: hidden; }
+
+/* Player card (Yahoo's YUI modal): full screen, one scrolling column.
+   Inside: close button, avatar rail, main column (hero, tabs, tables), news column. */
+html.ym-on .yui3-overlay:has(#react-playernote-overlay) {
+  position: fixed !important; inset: 0 !important; left: 0 !important; top: 0 !important;
+  width: auto !important; height: auto !important; max-width: none !important; max-height: none !important;
+}
+html.ym-on #react-playernote-overlay {
+  height: 100% !important; overflow-x: hidden !important; overflow-y: auto !important;
+  overscroll-behavior: contain; border-radius: 0 !important;
+}
+html.ym-on #player-note-content,
+html.ym-on #player-note-content > div { width: auto !important; height: auto !important; min-height: 100%; }
+html.ym-on #player-note-content div:has(> .close-card) {
+  flex-direction: column !important; align-items: stretch !important; height: auto !important; min-height: 100%;
+}
+html.ym-on #player-note-content .close-card {
+  position: fixed !important; top: 8px !important; right: 8px !important; z-index: 20;
+  width: 40px; height: 40px; border-radius: 50% !important; padding: 8px !important;
+  background: var(--ym-bg, #fff) !important; box-shadow: 0 2px 10px rgba(0,0,0,.3);
+}
+/* avatar rail -> horizontal strip */
+html.ym-on #player-note-content .close-card + div { width: auto !important; }
+html.ym-on #player-note-content .player-sidebar {
+  width: auto !important; height: auto !important; overflow-x: auto !important; overflow-y: hidden !important;
+  padding: 6px 56px 6px 8px !important; scrollbar-width: none;
+}
+html.ym-on #player-note-content .close-card + div ul { display: flex !important; gap: 6px; width: max-content; }
+html.ym-on #player-note-content .close-card + div li { flex: none; margin: 0 !important; }
+/* main column: let the whole sheet scroll instead of the inner panes */
+html.ym-on #player-note-content .close-card + div + div { width: auto !important; overflow: visible !important; }
+html.ym-on #player-note-content .close-card + div + div > div,
+html.ym-on #player-note-content .close-card + div + div > div > div:last-child,
+html.ym-on #player-note-content .close-card + div + div > div > div:last-child > section,
+html.ym-on #player-note-content .close-card + div + div > div > div:last-child > section > div {
+  height: auto !important; overflow: visible !important;
+}
+html.ym-on #player-note-content .close-card + div + div > div > div:last-child > section > header > div {
+  overflow-x: auto !important; scrollbar-width: none;
+}
+html.ym-on #player-note-content .close-card + div + div > div > div:last-child > section > header ul { white-space: nowrap; }
+html.ym-on #player-note-content .close-card + div + div [class*="Px(24px)"] { padding-left: 10px !important; padding-right: 10px !important; }
+html.ym-on #player-note-content div:has(> table) { overflow-x: auto !important; max-width: 100%; }
+/* news column below */
+html.ym-on #player-note-content .close-card + div + div + div { width: auto !important; }
+html.ym-on #player-note-content .close-card + div + div + div > div,
+html.ym-on #player-note-content .close-card + div + div + div > div > div { height: auto !important; overflow: visible !important; }
+html.ym-on #player-note-content .close-card + div + div + div > div > div { padding: 16px 12px !important; }
+html.ym-on #player-note-content .player-notes { width: auto !important; }
+/* empty ad slot between news items */
+html.ym-on #player-note-content div:has(> div > [id*="-LREC"]),
+html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
 `;
 
   function injectStyle() {
@@ -382,7 +458,7 @@ html.ym-on.ym-wide:not(.ym-idle-show) table.ym-roster tr.ym-idle td[data-ym="sta
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
   // Yahoo's icon font uses private-use characters; drop them from read text.
-  const text = el => (el ? el.textContent.replace(/[-]/g, '').replace(/\s+/g, ' ').trim() : '');
+  const text = el => (el ? el.textContent.replace(/[\uE000-\uF8FF]/g, '').replace(/\s+/g, ' ').trim() : '');
 
   function el(tag, attrs = {}, ...children) {
     const node = document.createElement(tag);
@@ -395,6 +471,9 @@ html.ym-on.ym-wide:not(.ym-idle-show) table.ym-roster tr.ym-idle td[data-ym="sta
     for (const c of children) if (c != null) node.append(c);
     return node;
   }
+
+  // replaceChildren() would print null/false as text; skip them like el() does.
+  const fill = (node, ...children) => node.replaceChildren(...children.filter(c => c != null && c !== false));
 
   function setAttr(node, name, value) {
     if (value == null) { if (node.hasAttribute(name)) node.removeAttribute(name); }
@@ -429,24 +508,158 @@ html.ym-on.ym-wide:not(.ym-idle-show) table.ym-roster tr.ym-idle td[data-ym="sta
   // ---------------------------------------------------------------------------
   // Top bar, team summary, settings
   // ---------------------------------------------------------------------------
-  function matchupHref() {
-    const target = $('#team-card-matchup [data-target]');
-    return target ? target.getAttribute('data-target') : `/nba/${leagueId}/matchup`;
+  const pathOf = a => new URL(a.getAttribute('href') || '', location.href).pathname;
+  const teamIdOf = a => (pathOf(a).match(/^\/nba\/\d+\/(\d+)/) || [])[1];
+
+  // Yahoo's header "My Team" link always points at the signed-in user's team,
+  // even while viewing someone else's roster.
+  function ownTeamId() {
+    const link = $$('#ybar-navigation a').find(a => text(a) === 'My Team');
+    const m = link && pathOf(link).match(/^\/nba\/(\d+)\/(\d+)/);
+    if (m && m[1] === leagueId) return m[2];
+    return readJSON(LEAGUE_KEY, {}).own || teamId;
   }
+
+  // The matchup card on a team page shows that team and its opponent.
+  function cardMatchup() {
+    const ids = $$('#team-card-matchup a').map(teamIdOf).filter(Boolean);
+    const target = $('#team-card-matchup [data-target]');
+    return { ids: [...new Set(ids)], href: target && target.getAttribute('data-target') };
+  }
+
+  // Remember my current opponent and matchup link so they're known on other teams' pages too.
+  function rememberLeague() {
+    const own = ownTeamId();
+    const { ids, href } = cardMatchup();
+    const saved = readJSON(LEAGUE_KEY, {});
+    const next = { ...saved, own };
+    if (teamId === own) {
+      next.opp = ids.find(id => id !== own) || saved.opp;
+      next.mu = href || saved.mu;
+    } else if (ids.includes(own)) {
+      next.opp = teamId; // this team is playing me this week
+    }
+    if (JSON.stringify(next) !== JSON.stringify(saved)) writeJSON(LEAGUE_KEY, next);
+    return next;
+  }
+
+  const matchupHref = () => readJSON(LEAGUE_KEY, {}).mu || `/nba/${leagueId}/matchup`;
 
   function buildBar() {
     if ($('#ym-bar')) return;
+    const own = ownTeamId();
     const nav = el('nav', { 'aria-label': 'League' },
-      el('a', { href: `/nba/${leagueId}/${teamId}`, class: 'ym-cur' }, 'My Team'),
+      el('a', { href: `/nba/${leagueId}/${own}`, class: teamId === own ? 'ym-cur' : null }, 'My Team'),
       el('a', { href: matchupHref() }, 'Matchup'),
       el('a', { href: `/nba/${leagueId}/players` }, 'Players'),
       el('a', { href: `/nba/${leagueId}` }, 'League'),
     );
-    const gear = el('button', { type: 'button', 'aria-label': 'Layout settings', onclick: toggleSheet }, '⚙︎');
-    document.body.prepend(el('div', { id: 'ym-bar' }, nav, gear));
-    document.body.append(buildSheet(), el('button', {
-      id: 'ym-pill', type: 'button', onclick: () => setSetting('on', true),
-    }, 'Mobile layout'));
+    const leagues = el('button', {
+      type: 'button', class: 'ym-lg', 'aria-label': 'Switch league', 'data-ym-sheet': 'ym-leagues', onclick: openLeagues,
+    }, '🏀');
+    const gear = el('button', {
+      type: 'button', 'aria-label': 'Layout settings', 'data-ym-sheet': 'ym-sheet', onclick: () => toggleSheet('ym-sheet'),
+    }, '⚙︎');
+    document.body.prepend(el('div', { id: 'ym-bar' }, leagues, nav, gear));
+    document.body.append(
+      buildSheet(),
+      el('div', { id: 'ym-leagues', class: 'ym-sheet ym-start', hidden: true, role: 'dialog', 'aria-label': 'My leagues' }),
+      el('div', { id: 'ym-teams', class: 'ym-sheet ym-start', hidden: true, role: 'dialog', 'aria-label': 'League teams' }),
+      el('button', { id: 'ym-pill', type: 'button', onclick: () => setSetting('on', true) }, 'Mobile layout'),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // League switcher. Yahoo builds its "My Teams & Leagues" menu only when the
+  // header's "Fantasy Basketball" item is hovered. On tap we hover it for the
+  // user (Yahoo's own code loads the menu, as on desktop), read the basketball
+  // teams out of it, and keep them in storage so the list shows instantly next time.
+  // ---------------------------------------------------------------------------
+  let leaguesFresh = false;
+  let leaguesLoading = false;
+
+  function harvestYahooLeagues() {
+    const links = $$('#navtray-fantasy a').filter(a => /^\/nba\/\d+\/\d+$/.test(pathOf(a)));
+    if (!links.length) return false;
+    writeJSON(LEAGUES_KEY, links.map(a => {
+      const [team, league, score, vs] = $$('*', a).filter(n => !n.childElementCount).map(text).filter(Boolean);
+      return { path: pathOf(a), team, league, score, vs };
+    }));
+    leaguesFresh = true;
+    return true;
+  }
+
+  function hoverYahooMenu(on) {
+    const link = $$('#ybar-navigation a').find(a => text(a) === 'Fantasy Basketball');
+    if (!link) return false;
+    const types = on ? ['pointerover', 'pointerenter', 'mouseover', 'mouseenter'] : ['pointerout', 'pointerleave', 'mouseout', 'mouseleave'];
+    for (const target of [link.closest('li') || link, link]) {
+      for (const type of types) {
+        const Ev = type.startsWith('pointer') ? PointerEvent : MouseEvent;
+        target.dispatchEvent(new Ev(type, { bubbles: !/enter|leave/.test(type), relatedTarget: document.body }));
+      }
+    }
+    return true;
+  }
+
+  function openLeagues() {
+    if (!toggleSheet('ym-leagues')) return;
+    if (leaguesFresh || harvestYahooLeagues()) return renderLeagues();
+    if (!hoverYahooMenu(true)) return renderLeagues();
+    leaguesLoading = true;
+    renderLeagues();
+    const started = Date.now();
+    const poll = setInterval(() => {
+      if (!harvestYahooLeagues() && Date.now() - started < 6000) return;
+      clearInterval(poll);
+      hoverYahooMenu(false);
+      leaguesLoading = false;
+      renderLeagues();
+    }, 250);
+  }
+
+  function renderLeagues() {
+    const sheet = $('#ym-leagues');
+    if (!sheet) return;
+    const here = `/nba/${leagueId}/${ownTeamId()}`;
+    const list = readJSON(LEAGUES_KEY, []);
+    if (!list.some(e => e.path === here)) {
+      list.unshift({ path: here, team: text($('#team-card .title .F-reset')), league: document.title.split(' - ')[0] });
+    }
+    fill(sheet,
+      el('h3', {}, 'My leagues'),
+      el('div', { class: 'ym-list' }, ...list.map(e => el('a', { href: e.path, 'aria-current': e.path === here ? 'page' : null },
+        el('span', { class: 'ym-main' }, el('b', {}, e.team || 'Team'), el('small', {}, e.league || '')),
+        leaguesFresh && e.score ? el('span', { class: 'ym-side' }, el('b', {}, e.score), el('small', {}, e.vs || '')) : null))),
+      leaguesLoading ? el('p', { class: 'ym-hint' }, 'Loading your leagues from Yahoo…') : null,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // League teams: Yahoo's team-name dropdown, with my current opponent on top.
+  // ---------------------------------------------------------------------------
+  function openTeams() {
+    if (!toggleSheet('ym-teams')) return;
+    const sheet = $('#ym-teams');
+    const { own, opp } = rememberLeague();
+    const teams = $$('#team-card .title .Dropdown a')
+      .map(a => ({ href: a.getAttribute('href'), id: teamIdOf(a), name: text(a) }))
+      .filter(t => t.id);
+    const rank = t => (t.id === opp ? 0 : t.id === own ? 1 : 2);
+    teams.sort((a, b) => rank(a) - rank(b)); // stable: keeps Yahoo's order otherwise
+
+    fill(sheet,
+      el('h3', {}, 'League teams'),
+      teams.length
+        ? el('div', { class: 'ym-list' }, ...teams.map(t => el('a', { href: t.href, class: t.id === opp ? 'ym-opp' : null },
+          el('span', { class: 'ym-main' }, el('b', {}, t.name)),
+          t.id === opp ? el('span', { class: 'ym-tag ym-opp-tag' }, 'Current opponent')
+            : t.id === own ? el('span', { class: 'ym-tag' }, 'You') : null)))
+        : el('p', { class: 'ym-hint' }, 'No team list on this page.'),
+      el('div', { class: 'ym-foot' }, el('button', {
+        type: 'button', class: 'ym-btn', onclick: () => { toggleSheet(null); html.classList.toggle('ym-show-card'); },
+      }, 'Show / hide Yahoo team card')),
+    );
   }
 
   function buildSummary() {
@@ -454,20 +667,21 @@ html.ym-on.ym-wide:not(.ym-idle-show) table.ym-roster tr.ym-idle td[data-ym="sta
     if (!card || $('#ym-summary')) return;
     const name = text($('.title .F-reset', card)) || document.title.split(' - ')[1]?.split(' | ')[0] || 'My team';
     const record = text($('.right .Fw-b', card));
-    const place = text($('.right em', card)).replace(/[()]/g, '');
+    const place = text($('.right em', card)).replace(/[()]/g, '').replace(/^record$/i, '');
     const mu = $('#team-card-matchup', card);
     const muTitle = text(mu && mu.querySelector('.Pbot-med')).replace(/^Week\s+/i, 'Wk ');
     const scores = mu ? $$('.Fz-lg', mu).map(text) : [];
 
     const notes = teamNotes();
+    const { opp } = rememberLeague();
     const summary = el('div', { id: 'ym-summary' },
       el('div', { class: 'ym-id' },
         el('button', {
-          type: 'button', class: 'ym-team', title: 'Show team card',
-          onclick: () => html.classList.toggle('ym-show-card'),
+          type: 'button', class: 'ym-team', title: 'League teams', 'data-ym-sheet': 'ym-teams', onclick: openTeams,
         }, name),
+        teamId === opp ? el('span', { class: 'ym-tag ym-opp-tag' }, 'Current opponent') : null,
         el('span', { class: 'ym-rec' }, [record, place].filter(Boolean).join(' · '))),
-      mu ? el('a', { class: 'ym-mu', href: matchupHref() },
+      mu ? el('a', { class: 'ym-mu', href: cardMatchup().href || matchupHref() },
         muTitle || 'Matchup',
         scores.length === 2 ? el('b', {}, `${scores[0]}–${scores[1]}`) : null) : null,
       notes.chips.length ? el('span', { class: 'ym-notes' }, notes.chips.join(' · ')) : null,
@@ -498,7 +712,7 @@ html.ym-on.ym-wide:not(.ym-idle-show) table.ym-roster tr.ym-idle td[data-ym="sta
       type: 'button', 'data-v': v, onclick: () => setSetting('idle', v),
     }, v === 'collapse' ? 'Collapse' : 'Show stats'));
 
-    const sheet = el('div', { id: 'ym-sheet', hidden: true, role: 'dialog', 'aria-label': 'Layout settings' },
+    const sheet = el('div', { id: 'ym-sheet', class: 'ym-sheet', hidden: true, role: 'dialog', 'aria-label': 'Layout settings' },
       el('div', { class: 'ym-row' }, el('span', {}, 'Text size'),
         el('span', { class: 'ym-seg' },
           el('button', { type: 'button', onclick: () => setSetting('scale', clampScale(settings.scale - 0.1)) }, 'A−'),
@@ -508,7 +722,7 @@ html.ym-on.ym-wide:not(.ym-idle-show) table.ym-roster tr.ym-idle td[data-ym="sta
       el('div', { class: 'ym-row' }, el('span', {}, 'Yahoo header'),
         el('button', { type: 'button', class: 'ym-btn', onclick: () => html.classList.toggle('ym-show-ybar') }, 'Show / hide')),
       el('div', { class: 'ym-row' }, el('span', {}, 'Original desktop page'),
-        el('button', { type: 'button', class: 'ym-btn', onclick: () => { toggleSheet(); setSetting('on', false); } }, 'Switch off')),
+        el('button', { type: 'button', class: 'ym-btn', onclick: () => { toggleSheet(null); setSetting('on', false); } }, 'Switch off')),
     );
     sheet.refresh = () => {
       valueOut.textContent = `${Math.round(settings.scale * 100)}%`;
@@ -520,9 +734,16 @@ html.ym-on.ym-wide:not(.ym-idle-show) table.ym-roster tr.ym-idle td[data-ym="sta
 
   const clampScale = v => Math.min(1.6, Math.max(0.6, Math.round(v * 10) / 10));
 
-  function toggleSheet() {
-    const sheet = $('#ym-sheet');
-    if (sheet) sheet.hidden = !sheet.hidden;
+  // Open the sheet with this id (closing any other), or close it if it's open.
+  // toggleSheet(null) closes all. Returns true when the sheet ends up open.
+  function toggleSheet(id) {
+    let opened = false;
+    for (const sheet of $$('.ym-sheet')) {
+      const open = sheet.id === id && sheet.hidden;
+      sheet.hidden = !open;
+      opened ||= open;
+    }
+    return opened;
   }
 
   function setSetting(key, value) {
@@ -551,19 +772,37 @@ html.ym-on.ym-wide:not(.ym-idle-show) table.ym-roster tr.ym-idle td[data-ym="sta
       }
     }
 
-    const kinds = Array.from(labelRow.cells).map((cell, i) => {
+    // One entry per column slot, so header cells spanning several columns
+    // (e.g. "Action" on other teams' pages) still line up with the row cells.
+    const kinds = [];
+    const labels = [];
+    for (const cell of labelRow.cells) {
       const label = text(cell);
       const cls = cell.classList;
-      if (cls.contains('pos')) return 'pos';
-      if (cls.contains('player')) return 'player';
-      if (cls.contains('edit') || cls.contains('Spacer')) return 'hide';
-      if (/^opp/i.test(label)) return 'opp';
-      if (/^(rank|fantasy)$/i.test(groups[i] || '')) return 'hide';
-      if (/\*$/.test(label)) return 'hide'; // starred columns are not scoring categories
-      if (!label) return 'hide';
-      return 'stat';
+      const group = groups[kinds.length] || '';
+      let kind = 'stat';
+      if (cls.contains('pos')) kind = 'pos';
+      else if (cls.contains('player')) kind = 'player';
+      else if (cls.contains('edit') || cls.contains('Spacer')) kind = 'hide';
+      else if (/^opp/i.test(label)) kind = 'opp';
+      else if (/^(rank|fantasy)$/i.test(group)) kind = 'hide';
+      else if (/\*$/.test(label)) kind = 'hide'; // starred columns are not scoring categories
+      else if (!label || /^action$/i.test(label)) kind = 'hide';
+      for (let i = 0; i < cell.colSpan; i++) { kinds.push(kind); labels.push(label); }
+    }
+    return { labelRow, kinds, labels };
+  }
+
+  // Column kind for each cell of a row, following colSpan; null if the row
+  // doesn't cover the same number of columns as the header.
+  function cellKinds(row, kinds) {
+    let slot = 0;
+    const out = Array.from(row.cells, cell => {
+      const kind = kinds[slot];
+      slot += cell.colSpan;
+      return kind;
     });
-    return { labelRow, kinds, labels: Array.from(labelRow.cells).map(text) };
+    return slot === kinds.length ? out : null;
   }
 
   function enhanceTable(table) {
@@ -581,19 +820,20 @@ html.ym-on.ym-wide:not(.ym-idle-show) table.ym-roster tr.ym-idle td[data-ym="sta
     table.classList.toggle('ym-many', n > 10);
     table.closest('.tablewrap')?.classList.toggle('ym-scroll', n > 10);
 
+    const headKinds = cellKinds(cols.labelRow, finalKinds) || [];
     Array.from(cols.labelRow.cells).forEach((cell, i) =>
-      setAttr(cell, 'data-ym', finalKinds[i] === 'opp' ? 'hide' : finalKinds[i]));
+      setAttr(cell, 'data-ym', headKinds[i] === 'opp' ? 'hide' : headKinds[i]));
 
     for (const body of [...table.tBodies, table.tFoot]) {
       if (body) for (const row of body.rows) enhanceRow(row, finalKinds);
     }
   }
 
-  function enhanceRow(row, kinds) {
+  function enhanceRow(row, columnKinds) {
     const cells = Array.from(row.cells);
-    const odd = cells.length !== kinds.length;
-    row.classList.toggle('ym-odd', odd && cells.length > 0);
-    if (odd) return;
+    const kinds = cellKinds(row, columnKinds);
+    row.classList.toggle('ym-odd', !kinds && cells.length > 0);
+    if (!kinds) return;
 
     let opp = '';
     cells.forEach((cell, i) => {
@@ -662,8 +902,7 @@ html.ym-on.ym-wide:not(.ym-idle-show) table.ym-roster tr.ym-idle td[data-ym="sta
     window.visualViewport?.addEventListener('resize', applyZoom);
     requestAnimationFrame(applyZoom);
     document.addEventListener('click', e => {
-      const sheet = $('#ym-sheet');
-      if (sheet && !sheet.hidden && !e.target.closest('#ym-sheet, #ym-bar button')) sheet.hidden = true;
+      if (!e.target.closest('.ym-sheet, [data-ym-sheet]')) toggleSheet(null);
     });
   }
 
