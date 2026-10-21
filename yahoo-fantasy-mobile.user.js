@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Yahoo Fantasy Basketball – Mobile
 // @namespace    https://github.com/Cyronemon/yahoo-fantasy-mobile
-// @version      0.2.0
+// @version      0.2.1
 // @description  Compact phone layout for the Yahoo Fantasy Basketball desktop site. Restyles Yahoo's own page; no API calls, no background fetches.
 // @homepageURL  https://github.com/Cyronemon/yahoo-fantasy-mobile
 // @updateURL    https://raw.githubusercontent.com/Cyronemon/yahoo-fantasy-mobile/main/yahoo-fantasy-mobile.user.js
@@ -371,6 +371,8 @@ html.ym-on #player-note-content .player-sidebar {
 }
 html.ym-on #player-note-content .close-card + div ul { display: flex !important; gap: 6px; width: max-content; }
 html.ym-on #player-note-content .close-card + div li { flex: none; margin: 0 !important; }
+/* "Rostered By" box covers the player photo at phone width */
+html.ym-on #player-note-content section.roster-status { display: none !important; }
 /* main column: let the whole sheet scroll instead of the inner panes */
 html.ym-on #player-note-content .close-card + div + div { width: auto !important; overflow: visible !important; }
 html.ym-on #player-note-content .close-card + div + div > div,

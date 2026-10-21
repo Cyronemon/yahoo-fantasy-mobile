@@ -15,7 +15,9 @@ Target setup: Firefox for Android + Violentmonkey + uBlock Origin, "Desktop site
 - Tap your team name for the league's teams, with your current opponent pinned on top.
   Their page gets the same layout, so you can check how their players did today
 - Player cards (tap a player name) open full screen: avatar strip, stats tabs with
-  sideways-scrolling tables, and news below, with the empty ad slot removed
+  sideways-scrolling tables, and news below, with the empty ad slot removed.
+  The "Rostered By" box is hidden so it doesn't cover the photo (its Add/Drop button goes with it;
+  use the roster page's Add/Drop buttons instead)
 - One block per player: position chip, name, team/positions, injury badge, game status, and the
   9 categories (FG%, FT%, 3PTM, PTS, REB, AST, ST, BLK, TO) on a line under a sticky header
 - Players with no game on the selected date collapse to one dimmed line (⚙ → "Show stats" to expand)
