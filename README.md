@@ -29,6 +29,16 @@ Target setup: Firefox for Android + Violentmonkey + uBlock Origin, "Desktop site
 - Landscape / wide screens: every player on a single line
 - ⚙ → Text size A−/A+, and "Switch off" to get the original page back (a "Mobile layout" pill turns it on again)
 
+## What works on the Matchup page
+
+- Week arrows and day tabs (Live, Totals, each day) as scrollable chips
+- Team-vs-team header: logos, full team names, category score, records
+- Games played / remaining on one line
+- Category board: the 9 categories in the same order as the roster stat line, one row per
+  team (marked by logo), each category's winner highlighted
+- Rosters one team at a time, with a toggle; same row layout as My Team. The toggle opens on
+  your team, and remembers your pick while you switch days
+
 Other Yahoo pages are left untouched for now.
 
 ## Install on the phone
@@ -67,7 +77,7 @@ Still to check on the device:
 
 ## Roadmap
 
-1. Restyle (this release): My Team. Next: Matchup, Players (free agents), League pages.
+1. Restyle: My Team and Matchup done. Next: Players (free agents), League pages.
 2. Analysis from tables already on the page: matchup category status (safe/swing/lost),
    punt-adjusted totals from the Standard Deviations tab, free-agent "fit" column,
    lineup flags (Questionable/Doubtful starters, Out players in active slots).

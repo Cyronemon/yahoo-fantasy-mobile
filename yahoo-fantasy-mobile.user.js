@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Yahoo Fantasy Basketball – Mobile
 // @namespace    https://github.com/Cyronemon/yahoo-fantasy-mobile
-// @version      0.2.2
+// @version      0.3.0
 // @description  Compact phone layout for the Yahoo Fantasy Basketball desktop site. Restyles Yahoo's own page; no API calls, no background fetches.
 // @homepageURL  https://github.com/Cyronemon/yahoo-fantasy-mobile
 // @updateURL    https://raw.githubusercontent.com/Cyronemon/yahoo-fantasy-mobile/main/yahoo-fantasy-mobile.user.js
@@ -36,11 +36,20 @@
   // ---------------------------------------------------------------------------
   // Page detection
   // ---------------------------------------------------------------------------
-  // My Team: /nba/<league>/<team> (optionally /team), with any query string.
-  const TEAM_PATH = /^\/nba\/(\d+)\/(\d+)(?:\/team)?\/?$/;
-  const teamMatch = location.pathname.match(TEAM_PATH);
-  if (!teamMatch) return; // Other pages are left untouched for now.
-  const [, leagueId, teamId] = teamMatch;
+  // Supported pages (any query string). Other pages are left untouched for now.
+  const PAGES = [
+    ['team', /^\/nba\/(\d+)\/(\d+)(?:\/team)?\/?$/], // /nba/<league>/<team>
+    ['matchup', /^\/nba\/(\d+)\/matchup\/?$/],       // /nba/<league>/matchup?week=&mid1=&mid2=
+  ];
+  let page = null;
+  let pathMatch = null;
+  for (const [name, re] of PAGES) {
+    pathMatch = location.pathname.match(re);
+    if (pathMatch) { page = name; break; }
+  }
+  if (!page) return;
+  const leagueId = pathMatch[1];
+  const teamId = page === 'team' ? pathMatch[2] : null;
   // Per-league memory: { own: my team id, opp: current opponent id, mu: matchup link }
   const LEAGUE_KEY = `ym:league:${leagueId}`;
 
@@ -265,10 +274,10 @@ html.ym-on table.ym-roster th {
 html.ym-on table.ym-roster [data-ym="hide"] { display: none !important; }
 
 /* header labels */
-html.ym-on table.ym-roster th { font-size: 10px; font-weight: 700; letter-spacing: .02em; color: var(--ym-faint); padding: 7px 0 6px !important; white-space: nowrap; }
+html.ym-on table.ym-roster th { font-size: 10px !important; font-weight: 700; letter-spacing: .02em; color: var(--ym-faint); padding: 7px 0 6px !important; white-space: nowrap; }
 html.ym-on table.ym-roster th[data-ym="stat"] { text-align: center !important; }
 html.ym-on table.ym-roster th a { color: inherit !important; }
-html.ym-on table.ym-roster th[data-ym="pos"] { grid-column: 1; }
+html.ym-on table.ym-roster th[data-ym="pos"] { grid-column: 1; grid-row: 1; } /* matchup tables put it mid-row */
 html.ym-on table.ym-roster th[data-ym="player"] { display: none; text-align: left; padding-left: 6px !important; }
 
 /* position chip: Yahoo's own swap target */
@@ -349,6 +358,98 @@ html.ym-on.ym-wide table.ym-roster td[data-ym="player"] { grid-column: 2; paddin
 html.ym-on.ym-wide table.ym-roster th[data-ym="player"] { display: block !important; grid-column: 2; }
 html.ym-on.ym-wide table.ym-roster td[data-ym="stat"] { padding: 6px 0 !important; }
 html.ym-on.ym-wide:not(.ym-idle-show) table.ym-roster tr.ym-idle td[data-ym="stat"] { display: block !important; visibility: hidden; }
+
+/* ---- Matchup page ---- */
+html.ym-on.ym-page-matchup #legend { display: none !important; }
+html.ym-on.ym-page-matchup #yspmaincontent > .Mod { margin-bottom: 6px !important; }
+/* week arrows + day tabs */
+html.ym-on.ym-page-matchup #yspmaincontent > section:first-child > .Hd > .Grid-h-mid {
+  display: flex !important; flex-direction: column; align-items: stretch; gap: 6px; padding: 8px 0 4px; border: 0 !important;
+}
+html.ym-on.ym-page-matchup #yspmaincontent > section:first-child > .Hd > .Grid-h-mid > .Grid-u { width: auto !important; padding: 0 4px !important; }
+html.ym-on.ym-page-matchup #yspmaincontent > section:first-child .Flyoutselectbox { width: auto !important; }
+html.ym-on.ym-page-matchup .moduletabs { width: auto !important; }
+html.ym-on.ym-page-matchup .moduletabs ul {
+  display: flex !important; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 0 4px !important; margin: 0 !important; border: 0 !important;
+}
+html.ym-on.ym-page-matchup .moduletabs li { flex: none; float: none !important; margin: 0 !important; padding: 0 !important; border: 0 !important; width: auto !important; }
+html.ym-on.ym-page-matchup .moduletabs a {
+  display: block; padding: 6px 11px !important; border: 1px solid var(--ym-line) !important; border-radius: 15px;
+  font-size: 12px !important; line-height: 16px !important; color: inherit !important; text-decoration: none !important; white-space: nowrap;
+}
+html.ym-on.ym-page-matchup .moduletabs li.Selected a { background: var(--ym-accent) !important; border-color: transparent !important; color: #fff !important; }
+/* team vs team header */
+html.ym-on #matchup-header { margin: 0 !important; padding: 6px 6px 0 !important; }
+html.ym-on #matchup-header .Grid-h-mid {
+  display: grid !important; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 6px;
+}
+html.ym-on #matchup-header .Grid-u-1-3 { width: auto !important; max-width: none !important; min-width: 0; padding: 0 !important; }
+html.ym-on #matchup-header .Grid-u-1-3:not(:nth-child(2)) > div {
+  display: flex !important; flex-direction: column; align-items: center; text-align: center !important; padding: 4px 0 !important; min-width: 0;
+}
+html.ym-on #matchup-header .Grid-u-1-3:not(:nth-child(2)) > div > * { width: auto !important; max-width: 100%; padding: 0 !important; min-width: 0; text-align: center !important; }
+html.ym-on #matchup-header .Grid-u-1-3:not(:nth-child(2)) > div > :not(a) { align-self: stretch; } /* names wrap at full column width */
+html.ym-on #matchup-header a:has(> img) { order: -1; margin-bottom: 4px; }
+html.ym-on #matchup-header img { width: 40px !important; height: 40px !important; }
+html.ym-on #matchup-header .Fz-xxl.Ell {
+  font-size: 15px !important; line-height: 1.2 !important; white-space: normal !important;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: break-word;
+}
+html.ym-on #matchup-header .user-id { font-size: 11px; opacity: .7; }
+html.ym-on #matchup-header .Grid-u-1-3:nth-child(2) table { margin: 0 !important; }
+html.ym-on #matchup-header .Grid-u-1-3:nth-child(2) tr:has(.felo-matchup-button) { display: none; } /* "Compare Managers" */
+html.ym-on #matchup-header td.Fz-xxl { font-size: 28px !important; font-weight: 700; padding: 0 6px !important; }
+html.ym-on #matchup-header th { padding: 0 2px !important; }
+html.ym-on #remaining-games { padding: 6px 8px !important; }
+html.ym-on #remaining-games .Grid-h-mid { display: flex !important; justify-content: space-between; gap: 6px; font-size: 10px !important; }
+html.ym-on #remaining-games .Grid-h-mid > .Grid-u-1-3 { width: auto !important; flex: none; white-space: nowrap; }
+html.ym-on #remaining-games .Grid-h-mid span[class*="M"] { margin-left: 3px !important; margin-right: 3px !important; }
+html.ym-on [id^="matchupcontent"] { overflow: visible !important; } /* lets the roster header stick */
+/* category totals: compact 9-column board, winners highlighted */
+html.ym-on #matchup-wall-header { margin: 0 !important; padding: 0 !important; }
+html.ym-on #matchup-wall-header > :not(table):not(:has(table)) { display: none !important; } /* "*Non-scoring stats" note */
+html.ym-on #matchup-wall-header * { width: auto !important; min-width: 0 !important; }
+html.ym-on table.ym-cats { display: block !important; width: 100% !important; margin: 4px 0 0 !important; border: 0 !important; font-size: 13px; }
+html.ym-on table.ym-cats > thead,
+html.ym-on table.ym-cats > tbody { display: block; }
+/* team column shows just the logo; names are in the header and the roster toggle */
+html.ym-on table.ym-cats tr {
+  display: grid !important; grid-template-columns: 28px repeat(9, minmax(0, 1fr)); align-items: center; padding: 0 4px 0 6px; height: auto !important;
+}
+html.ym-on table.ym-cats > tbody > tr { border-top: 1px solid var(--ym-line); }
+html.ym-on table.ym-cats td,
+html.ym-on table.ym-cats th {
+  display: block; padding: 7px 0 !important; border: 0 !important; background: none !important; text-align: center !important;
+  white-space: nowrap; overflow: hidden; font-variant-numeric: tabular-nums;
+}
+html.ym-on table.ym-cats [data-ym="hide"] { display: none !important; }
+html.ym-on table.ym-cats th { font-size: 10px !important; font-weight: 700; color: var(--ym-faint); padding: 6px 0 !important; }
+html.ym-on table.ym-cats [data-ym="team"] { text-align: left !important; font-size: 0 !important; line-height: 0; }
+html.ym-on table.ym-cats [data-ym="team"] img { width: 20px !important; height: 20px !important; margin: 0 !important; }
+html.ym-on table.ym-cats td[data-ym="stat"] { font-weight: 400; font-size: 12px !important; }
+html.ym-on table.ym-cats td[data-ym="stat"].Fw-b {
+  font-weight: 700; color: var(--ym-accent);
+  background: color-mix(in srgb, var(--ym-accent) 14%, transparent) !important; border-radius: 6px;
+}
+/* team toggle above the rosters */
+html.ym-on #ym-sides { display: flex; margin: 12px 8px 6px; border: 1px solid var(--ym-line); border-radius: 10px; overflow: hidden; }
+#ym-sides { display: none; }
+#ym-sides button {
+  flex: 1; min-width: 0; height: 36px; padding: 0 8px; border: 0; background: none; color: inherit;
+  font: inherit; font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer;
+}
+#ym-sides button + button { border-left: 1px solid var(--ym-line); }
+#ym-sides button[aria-selected="true"] { background: var(--ym-accent); color: #fff; }
+/* rosters: same rows as My Team, one team at a time */
+html.ym-on table.ym-roster[data-ym-show="a"] [data-ym-side="b"],
+html.ym-on table.ym-roster[data-ym-show="b"] [data-ym-side="a"] { display: none !important; }
+html.ym-on table.ym-mu-roster td[data-ym="pos"] {
+  justify-self: center; align-self: center; display: flex; align-items: center; justify-content: center;
+  min-width: 36px; height: 26px; padding: 0 4px !important; box-sizing: border-box; border-radius: 7px;
+  font-size: 11px; font-weight: 700; color: inherit !important;
+  background: color-mix(in srgb, currentColor 9%, transparent) !important;
+}
+html.ym-on table.ym-mu-roster { border: 0 !important; }
 
 /* Player card (Yahoo's YUI modal): full screen, one scrolling column.
    Inside: close button, avatar rail, main column (hero, tabs, tables), news column. */
@@ -483,6 +584,7 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
   }
 
   function applyMode() {
+    html.classList.add(`ym-page-${page}`);
     html.classList.toggle('ym-on', settings.on);
     html.classList.toggle('ym-idle-show', settings.idle === 'show');
     // `viewport: false` is a dev switch for testing the zoom path in browsers
@@ -536,10 +638,9 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
     html.style.setProperty('--ym-fg', getComputedStyle(ref).color);
   }
 
-  // Remove the fixed desktop widths on every wrapper between <body> and the roster.
+  // Remove the fixed desktop widths on every wrapper between <body> and the main content.
   function markChain() {
-    const start = $('#team-roster');
-    for (let n = start && start.parentElement; n && n !== html; n = n.parentElement) {
+    for (let n = $('#yspmaincontent'); n && n !== html; n = n.parentElement) {
       n.classList.add('ym-chain');
     }
   }
@@ -589,7 +690,7 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
     const own = ownTeamId();
     const nav = el('nav', { 'aria-label': 'League' },
       el('a', { href: `/nba/${leagueId}/${own}`, class: teamId === own ? 'ym-cur' : null }, 'My Team'),
-      el('a', { href: matchupHref() }, 'Matchup'),
+      el('a', { href: matchupHref(), class: page === 'matchup' ? 'ym-cur' : null }, 'Matchup'),
       el('a', { href: `/nba/${leagueId}/players` }, 'Players'),
       el('a', { href: `/nba/${leagueId}` }, 'League'),
     );
@@ -902,6 +1003,120 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
     }
   }
 
+  // Mark every cell of a table from per-column-slot attribute values.
+  function markCells(table, slots) {
+    for (const row of table.rows) {
+      const cells = Array.from(row.cells);
+      let slot = 0;
+      const spans = cells.map(cell => { const at = slot; slot += cell.colSpan; return at; });
+      const odd = slot !== slots.length;
+      row.classList.toggle('ym-odd', odd && cells.length > 0);
+      if (odd) continue;
+      cells.forEach((cell, i) => {
+        const { kind, side } = slots[spans[i]];
+        setAttr(cell, 'data-ym', kind);
+        setAttr(cell, 'data-ym-side', side || null);
+        if (kind === 'stat' && cell.tagName === 'TD') {
+          const v = text(cell);
+          cell.classList.toggle('ym-empty', v === '' || v === '-' || v === '-/-');
+        }
+      });
+    }
+  }
+
+  // Header labels -> one entry per column slot.
+  function headerSlots(table) {
+    const labelRow = table.tHead && table.tHead.rows[table.tHead.rows.length - 1];
+    if (!labelRow) return null;
+    const slots = [];
+    for (const cell of labelRow.cells) {
+      for (let i = 0; i < cell.colSpan; i++) slots.push({ label: text(cell), hidden: cell.classList.contains('Hidden') });
+    }
+    return slots;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Matchup page
+  // ---------------------------------------------------------------------------
+  let matchupSide = null; // 'a' | 'b': which team's roster is shown on the phone
+
+  function matchupSides() {
+    const cols = $$('#matchup-header .Grid-u-1-3');
+    const sideOf = col => {
+      const link = col && $$('a', col).find(a => /^\/nba\/\d+\/\d+$/.test(pathOf(a)) && text(a));
+      return link ? { id: teamIdOf(link), name: text(link) } : null;
+    };
+    return { a: sideOf(cols[0]), b: sideOf(cols[2]) };
+  }
+
+  // Category totals: keep the 9 scoring categories; Yahoo marks each winner in bold.
+  function enhanceCategories() {
+    const table = $('#matchup-wall-header table');
+    const slots = table && headerSlots(table);
+    if (!slots) return;
+    table.classList.add('ym-cats');
+    markCells(table, slots.map(s => ({
+      kind: /^team$/i.test(s.label) ? 'team' : CATS.includes(s.label.toUpperCase()) ? 'stat' : 'hide',
+    })));
+  }
+
+  // Both rosters share one table: team A's columns, a shared slot "Pos" column,
+  // then team B's columns. Show one team at a time with the same row layout as My Team.
+  function enhanceMatchupRoster(sides) {
+    const table = $$('#yspmaincontent table[id^="statTable"]').find(t => t.tHead);
+    const slots = table && headerSlots(table);
+    if (!slots) return;
+    const center = slots.findIndex(s => /^pos$/i.test(s.label) && !s.hidden);
+    if (center < 0) return;
+    markCells(table, slots.map((s, i) => {
+      if (i === center) return { kind: 'pos' };
+      const side = i < center ? 'a' : 'b';
+      if (/^player$/i.test(s.label)) return { kind: 'player', side };
+      if (CATS.includes(s.label.toUpperCase())) return { kind: 'stat', side };
+      return { kind: 'hide' };
+    }));
+    table.classList.add('ym-roster', 'ym-mu-roster');
+    table.style.setProperty('--ym-n', String(slots.filter((s, i) => i < center && CATS.includes(s.label.toUpperCase())).length || 9));
+
+    // Day tabs are full page loads; keep showing the same team (this browser session only).
+    if (!matchupSide) {
+      let shown = null;
+      try { shown = sessionStorage.getItem('ym:mu-team'); } catch { /* storage blocked */ }
+      const own = ownTeamId();
+      const pick = id => (sides.a && sides.a.id === id ? 'a' : sides.b && sides.b.id === id ? 'b' : null);
+      matchupSide = pick(shown) || pick(own) || 'a';
+    }
+    setAttr(table, 'data-ym-show', matchupSide);
+
+    let toggle = $('#ym-sides');
+    if (!toggle || toggle.nextElementSibling !== table.closest('div, section')) {
+      toggle?.remove();
+      const show = side => {
+        matchupSide = side;
+        try { sessionStorage.setItem('ym:mu-team', sides[side] ? sides[side].id : ''); } catch { /* storage blocked */ }
+        scheduleEnhance();
+      };
+      toggle = el('div', { id: 'ym-sides', class: 'ym-seg', role: 'tablist' }, ...['a', 'b'].map(side =>
+        el('button', { type: 'button', role: 'tab', 'data-side': side, onclick: () => show(side) },
+          sides[side] ? sides[side].name : side.toUpperCase())));
+      table.closest('div, section').before(toggle);
+    }
+    for (const b of toggle.children) setAttr(b, 'aria-selected', String(b.dataset.side === matchupSide));
+  }
+
+  function enhanceMatchup() {
+    const sides = matchupSides();
+    // Remember my opponent when this is my matchup, so team pages can highlight them.
+    const own = ownTeamId();
+    if (own && sides.a && sides.b && [sides.a.id, sides.b.id].includes(own)) {
+      const saved = readJSON(LEAGUE_KEY, {});
+      const next = { ...saved, own, opp: sides.a.id === own ? sides.b.id : sides.a.id, mu: location.pathname + location.search };
+      if (JSON.stringify(next) !== JSON.stringify(saved)) writeJSON(LEAGUE_KEY, next);
+    }
+    enhanceCategories();
+    enhanceMatchupRoster(sides);
+  }
+
   // ---------------------------------------------------------------------------
   // Boot
   // ---------------------------------------------------------------------------
@@ -920,8 +1135,12 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
     buildBar();
     if (!settings.on) return;
     markChain();
-    buildSummary();
-    enhanceRoster();
+    if (page === 'team') {
+      buildSummary();
+      enhanceRoster();
+    } else if (page === 'matchup') {
+      enhanceMatchup();
+    }
     syncThemeColors();
   }
 
@@ -946,6 +1165,7 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
   }
 
   injectStyle();
+  html.classList.add(`ym-page-${page}`);
   html.classList.toggle('ym-on', settings.on);
   applyZoom();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
