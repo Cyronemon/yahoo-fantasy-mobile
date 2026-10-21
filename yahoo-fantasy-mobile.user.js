@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Yahoo Fantasy Basketball – Mobile
 // @namespace    https://github.com/Cyronemon/yahoo-fantasy-mobile
-// @version      0.4.0
+// @version      0.5.0
 // @description  Compact phone layout for the Yahoo Fantasy Basketball desktop site. Restyles Yahoo's own page; no API calls, no background fetches.
 // @homepageURL  https://github.com/Cyronemon/yahoo-fantasy-mobile
 // @updateURL    https://raw.githubusercontent.com/Cyronemon/yahoo-fantasy-mobile/main/yahoo-fantasy-mobile.user.js
@@ -41,6 +41,7 @@
     ['team', /^\/nba\/(\d+)\/(\d+)(?:\/team)?\/?$/], // /nba/<league>/<team>
     ['matchup', /^\/nba\/(\d+)\/matchup\/?$/],       // /nba/<league>/matchup?week=&mid1=&mid2=
     ['players', /^\/nba\/(\d+)\/players\/?$/],       // /nba/<league>/players (free agents, filters in the query)
+    ['league', /^\/nba\/(\d+)\/?$/],                 // /nba/<league>: league home
   ];
   let page = null;
   let pathMatch = null;
@@ -92,6 +93,7 @@ html.ym-on .ym-chain,
 html.ym-on .RailWrap,
 html.ym-on .RailWrap > .Rail,
 html.ym-on .RailResponsive,
+html.ym-on .RailFull,
 html.ym-on .Page-herocontent {
   display: block !important; float: none !important;
   width: auto !important; min-width: 0 !important; max-width: none !important;
@@ -546,6 +548,63 @@ html.ym-on .pagingnavlist a {
   display: block; padding: 8px 16px; border: 1px solid var(--ym-line); border-radius: 18px; font-size: 13px; text-decoration: none !important;
 }
 
+/* ---- League home ---- */
+/* the right rail holds the NBA scoreboard here: show it below the main column */
+html.ym-on.ym-page-league #yspsub { display: block !important; width: auto !important; float: none !important; padding: 0 8px !important; }
+html.ym-on.ym-page-league #yspmaincontent > *,
+html.ym-on.ym-page-league #yspsub > * { width: auto !important; max-width: none !important; margin-left: 0 !important; margin-right: 0 !important; }
+html.ym-on.ym-page-league #yspmaincontent > .Mod { margin-bottom: 14px !important; }
+html.ym-on.ym-page-league #yspmaincontent > * > :is(header, .Hd),
+html.ym-on.ym-page-league #yspsub > * > :is(header, .Hd) { padding-left: 8px !important; padding-right: 8px !important; }
+html.ym-on.ym-page-league .F-mod-header { font-size: 18px !important; }
+/* league name, logo, announcements, season picker */
+html.ym-on #leaguehome-billboard { margin: 0 !important; padding: 0 8px !important; }
+html.ym-on #leaguehome-billboard .Grid-h-mid { margin: 8px 0 !important; padding: 0 !important; white-space: normal !important; }
+html.ym-on #leaguehome-billboard h1 { flex-wrap: nowrap !important; align-items: center; gap: 10px; font-size: 18px !important; height: auto !important; }
+html.ym-on #leaguehome-billboard h1 > * { min-width: 0; }
+html.ym-on #leaguehome-billboard h1 * { white-space: normal !important; }
+html.ym-on #leaguehome-billboard h1 .Ai-c { flex-wrap: wrap; gap: 2px 8px; }
+html.ym-on #leaguehome-billboard img { width: 44px !important; height: 44px !important; }
+/* tab rows (Standings / Schedule ..., All Transactions / Added ...) scroll sideways */
+html.ym-on.ym-page-league .Nav-h { display: flex !important; flex-wrap: nowrap !important; overflow-x: auto; scrollbar-width: none; white-space: nowrap; padding: 0 8px !important; }
+html.ym-on.ym-page-league .Nav-h > li { flex: none; float: none !important; }
+/* standings: rank, team, W-L-T, Pct, GB, Waiver, Moves ("Last Week" hidden) */
+html.ym-on #standingstable { width: 100% !important; table-layout: fixed; font-size: 12px; }
+html.ym-on #standingstable :is(th, td) { padding: 8px 2px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.ym-on #standingstable :is(th, td):nth-child(1) { width: 30px; text-align: center !important; }
+html.ym-on #standingstable :is(th, td):nth-child(2) { width: auto; text-align: left !important; }
+html.ym-on #standingstable :is(th, td):nth-child(3) { width: 44px; }
+html.ym-on #standingstable :is(th, td):nth-child(4) { width: 38px; }
+html.ym-on #standingstable :is(th, td):nth-child(5) { width: 28px; }
+html.ym-on #standingstable :is(th, td):nth-child(6) { display: none !important; }
+html.ym-on #standingstable :is(th, td):nth-child(7),
+html.ym-on #standingstable :is(th, td):nth-child(8) { width: 42px; }
+html.ym-on #standingstable th { font-size: 10px !important; }
+html.ym-on #standingstable td:nth-child(2) img { width: 22px !important; height: 22px !important; }
+html.ym-on #standingstable td:nth-child(2) > a:has(img) { padding-right: 6px !important; vertical-align: middle; }
+html.ym-on #standingstable td:nth-child(2) > a.Ell {
+  max-width: calc(100% - 32px) !important; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* your team: highlighted in standings and in the week's matchups */
+html.ym-on .ym-mine { background: color-mix(in srgb, var(--ym-accent) 9%, transparent) !important; }
+/* commish notes / updates: author on one line, text full width below */
+html.ym-on #commishupdates .Grid-u-1-3,
+html.ym-on #commishupdates .Grid-u-2-3 { display: block !important; width: auto !important; max-width: none !important; padding: 0 8px !important; }
+html.ym-on #commishupdates .Grid-u-1-3 { margin-bottom: 6px; }
+html.ym-on #commishupdates .Grid-u-1-3 .Grid-u { display: inline-flex !important; flex-wrap: wrap; align-items: baseline; gap: 0 6px; width: auto !important; }
+html.ym-on #commishupdates .Grid-u-1-3 :is(.D-b, .Block) { display: inline !important; }
+html.ym-on #commishupdates .Grid-u-1-3 img { width: 28px !important; height: 28px !important; }
+html.ym-on #commishupdates .Grid-u-1-3 figure { margin: 0 8px 0 0 !important; }
+html.ym-on #commishupdates li { padding: 10px 0 !important; }
+/* fantasy news: smaller thumbnails so headlines get the width */
+html.ym-on #stream a:has(img) > div:has(img) { width: 112px !important; min-width: 112px; height: 76px !important; flex: none; }
+html.ym-on #stream a:has(img) > div:has(img) * { width: 100% !important; height: 100% !important; }
+html.ym-on #stream img { object-fit: cover; border-radius: 8px; }
+html.ym-on #stream { padding: 0 8px !important; }
+/* NBA scores */
+html.ym-on.ym-page-league #scoreboard { margin-left: auto !important; margin-right: auto !important; }
+html.ym-on.ym-page-league #scoreboard * { max-width: 100%; }
+
 /* Player card (Yahoo's YUI modal): full screen, one scrolling column.
    Inside: close button, avatar rail, main column (hero, tabs, tables), news column. */
 html.ym-on .yui3-overlay:has(#react-playernote-overlay) {
@@ -787,7 +846,7 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
       el('a', { href: `/nba/${leagueId}/${own}`, class: teamId === own ? 'ym-cur' : null }, 'My Team'),
       el('a', { href: matchupHref(), class: page === 'matchup' ? 'ym-cur' : null }, 'Matchup'),
       el('a', { href: `/nba/${leagueId}/players`, class: page === 'players' ? 'ym-cur' : null }, 'Players'),
-      el('a', { href: `/nba/${leagueId}` }, 'League'),
+      el('a', { href: `/nba/${leagueId}`, class: page === 'league' ? 'ym-cur' : null }, 'League'),
     );
     const leagues = el('button', {
       type: 'button', class: 'ym-lg', 'aria-label': 'Switch league', 'data-ym-sheet': 'ym-leagues', onclick: openLeagues,
@@ -1212,6 +1271,16 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
     enhanceMatchupRoster(sides);
   }
 
+  // Highlight my team's row in the standings and the week's matchups list.
+  function markMine() {
+    const own = ownTeamId();
+    if (!own) return;
+    const ownPath = `/nba/${leagueId}/${own}`;
+    for (const row of $$('#standingstable tbody tr, #matchupweek li')) {
+      row.classList.toggle('ym-mine', $$('a', row).some(a => pathOf(a) === ownPath));
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Players page (free agents)
   // ---------------------------------------------------------------------------
@@ -1280,8 +1349,11 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
       enhanceRoster();
     } else if (page === 'matchup') {
       enhanceMatchup();
+      markMine();
     } else if (page === 'players') {
       enhancePlayers();
+    } else if (page === 'league') {
+      markMine();
     }
     syncThemeColors();
   }

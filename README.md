@@ -50,6 +50,15 @@ Target setup: Firefox for Android + Violentmonkey + uBlock Origin, "Desktop site
 - Changing a filter reloads the table in place; the layout re-applies
 - Previous / Next 25 as buttons; the icon legend is hidden
 
+## What works on the League page
+
+- League header: logo beside the name, League Announcements and the season picker
+- This week's matchups as aligned lines, with your matchup highlighted
+- Standings: rank, team, W-L-T, Pct, GB, waiver priority and moves (Last Week hidden);
+  long names shortened with "…", your row highlighted; tab rows scroll sideways
+- Recent transactions, Commish notes and updates (author on one line, text full width)
+- Fantasy news with small thumbnails, and the NBA scoreboard below
+
 Other Yahoo pages are left untouched for now.
 
 ## Install on the phone
@@ -88,7 +97,7 @@ Still to check on the device:
 
 ## Roadmap
 
-1. Restyle: My Team, Matchup and Players done. Next: League page.
+1. Restyle: My Team, Matchup, Players and League done.
 2. Analysis from tables already on the page: matchup category status (safe/swing/lost),
    punt-adjusted totals from the Standard Deviations tab, free-agent "fit" column,
    lineup flags (Questionable/Doubtful starters, Out players in active slots).
