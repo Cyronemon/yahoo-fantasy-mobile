@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Yahoo Fantasy Basketball – Mobile
 // @namespace    https://github.com/Cyronemon/yahoo-fantasy-mobile
-// @version      0.3.0
+// @version      0.3.1
 // @description  Compact phone layout for the Yahoo Fantasy Basketball desktop site. Restyles Yahoo's own page; no API calls, no background fetches.
 // @homepageURL  https://github.com/Cyronemon/yahoo-fantasy-mobile
 // @updateURL    https://raw.githubusercontent.com/Cyronemon/yahoo-fantasy-mobile/main/yahoo-fantasy-mobile.user.js
@@ -414,7 +414,8 @@ html.ym-on table.ym-cats > thead,
 html.ym-on table.ym-cats > tbody { display: block; }
 /* team column shows just the logo; names are in the header and the roster toggle */
 html.ym-on table.ym-cats tr {
-  display: grid !important; grid-template-columns: 28px repeat(9, minmax(0, 1fr)); align-items: center; padding: 0 4px 0 6px; height: auto !important;
+  display: grid !important; grid-template-columns: 26px repeat(9, minmax(0, 1fr)); column-gap: 2px;
+  align-items: center; padding: 0 4px 0 6px; height: auto !important;
 }
 html.ym-on table.ym-cats > tbody > tr { border-top: 1px solid var(--ym-line); }
 html.ym-on table.ym-cats td,
@@ -424,13 +425,46 @@ html.ym-on table.ym-cats th {
 }
 html.ym-on table.ym-cats [data-ym="hide"] { display: none !important; }
 html.ym-on table.ym-cats th { font-size: 10px !important; font-weight: 700; color: var(--ym-faint); padding: 6px 0 !important; }
-html.ym-on table.ym-cats [data-ym="team"] { text-align: left !important; font-size: 0 !important; line-height: 0; }
-html.ym-on table.ym-cats [data-ym="team"] img { width: 20px !important; height: 20px !important; margin: 0 !important; }
+html.ym-on table.ym-cats [data-ym="team"] { font-size: 0 !important; line-height: 0; }
+/* Yahoo pads the team cell's inner box 16px, which pushed the logo under the first value */
+html.ym-on table.ym-cats [data-ym="team"] * { padding: 0 !important; margin: 0 !important; width: auto !important; }
+html.ym-on table.ym-cats td[data-ym="team"] > div > div { display: flex !important; justify-content: center; }
+html.ym-on table.ym-cats [data-ym="team"] img { width: 22px !important; height: 22px !important; }
 html.ym-on table.ym-cats td[data-ym="stat"] { font-weight: 400; font-size: 12px !important; }
 html.ym-on table.ym-cats td[data-ym="stat"].Fw-b {
   font-weight: 700; color: var(--ym-accent);
   background: color-mix(in srgb, var(--ym-accent) 14%, transparent) !important; border-radius: 6px;
 }
+/* league scoreboard at the bottom ("Matchups"): one aligned line per matchup.
+   Yahoo nests each side as name/logo + score boxes; flatten them into one 7-column grid. */
+html.ym-on #matchupweek { margin: 16px 0 0 !important; }
+html.ym-on #matchupweek > header { display: flex !important; align-items: center; justify-content: space-between; padding: 0 8px 8px !important; }
+html.ym-on #matchupweek > header h2 { font-size: 18px !important; }
+html.ym-on #matchupweek .Submod > .Grid-h-mid { display: flex !important; justify-content: space-between; padding: 8px !important; }
+html.ym-on #matchupweek .Submod > .Grid-h-mid > * { width: auto !important; display: flex !important; align-items: center; gap: 6px; white-space: nowrap; }
+html.ym-on #matchupweek .Grid-table {
+  display: grid !important; grid-template-columns: 30px minmax(0, 1fr) 20px 16px 20px minmax(0, 1fr) 30px;
+  grid-template-areas: "la na sa vs sb nb lb"; align-items: center; column-gap: 6px;
+  width: auto !important; padding: 8px !important; box-sizing: border-box;
+}
+html.ym-on #matchupweek .Grid-table > div:not(:nth-child(2)),
+html.ym-on #matchupweek .Grid-table > div:not(:nth-child(2)) > .Grid-h-mid,
+html.ym-on #matchupweek .Grid-table .Grid-u-3-4,
+html.ym-on #matchupweek .Grid-table .Grid-u-3-4 > div { display: contents !important; }
+html.ym-on #matchupweek .Grid-table * { padding: 0 !important; margin: 0 !important; max-width: none !important; }
+html.ym-on #matchupweek .Grid-table > div:first-child span:has(img) { grid-area: la; }
+html.ym-on #matchupweek .Grid-table > div:last-child span:has(img) { grid-area: lb; }
+html.ym-on #matchupweek .Grid-table > div:first-child .Grid-u-3-4 > div > div { grid-area: na; text-align: left !important; }
+html.ym-on #matchupweek .Grid-table > div:last-child .Grid-u-3-4 > div > div { grid-area: nb; text-align: right !important; }
+html.ym-on #matchupweek .Grid-table > div:first-child .Grid-u-1-4 { grid-area: sa; text-align: right !important; }
+html.ym-on #matchupweek .Grid-table > div:last-child .Grid-u-1-4 { grid-area: sb; text-align: left !important; }
+html.ym-on #matchupweek .Grid-table > div:nth-child(2) { grid-area: vs; display: block !important; width: auto !important; text-align: center; }
+html.ym-on #matchupweek .Grid-table .Grid-u-3-4 > div > div,
+html.ym-on #matchupweek .Grid-table .Grid-u-1-4 { display: block !important; width: auto !important; min-width: 0; }
+html.ym-on #matchupweek .Grid-table .Ell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px !important; }
+html.ym-on #matchupweek .Grid-table .Fz-lg { font-size: 17px !important; font-weight: 700; }
+html.ym-on #matchupweek .Grid-table img { width: 30px !important; height: 30px !important; display: block; }
+
 /* team toggle above the rosters */
 html.ym-on #ym-sides { display: flex; margin: 12px 8px 6px; border: 1px solid var(--ym-line); border-radius: 10px; overflow: hidden; }
 #ym-sides { display: none; }

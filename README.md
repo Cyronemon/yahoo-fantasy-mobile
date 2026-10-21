@@ -38,6 +38,7 @@ Target setup: Firefox for Android + Violentmonkey + uBlock Origin, "Desktop site
   team (marked by logo), each category's winner highlighted
 - Rosters one team at a time, with a toggle; same row layout as My Team. The toggle opens on
   your team, and remembers your pick while you switch days
+- League scoreboard at the bottom: one aligned line per matchup (logo, name, record, score)
 
 Other Yahoo pages are left untouched for now.
 
