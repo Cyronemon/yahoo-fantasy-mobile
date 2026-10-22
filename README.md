@@ -22,7 +22,9 @@ Target setup: Firefox for Android + Violentmonkey + uBlock Origin, "Desktop site
 - One block per player: position chip, name, team/positions, injury badge, game status, and the
   9 categories (FG%, FT%, 3PTM, PTS, REB, AST, ST, BLK, TO) on a line under a sticky header
 - Players with no game on the selected date collapse to one dimmed line (⚙ → "Show stats" to expand)
-- Team card shrunk to one summary line (Yahoo's full card is still one tap away in the teams list)
+- Team card shrunk to a short summary: team name, then the manager's name, their Yahoo level
+  (e.g. "Gold 785", with a tier-coloured dot), record and place; the matchup pill below
+  (Yahoo's full card is still one tap away in the teams list)
 - Ads, ad space, footer, legend and chat button hidden
 - Yahoo's real buttons and links stay in place, restyled: date arrows, stat tabs,
   Start Active Players, Add/Drop, and tap-a-row lineup swaps

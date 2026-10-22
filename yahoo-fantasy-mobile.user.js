@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Yahoo Fantasy Basketball – Mobile
 // @namespace    https://github.com/Cyronemon/yahoo-fantasy-mobile
-// @version      0.5.2
+// @version      0.5.3
 // @description  Compact phone layout for the Yahoo Fantasy Basketball desktop site. Restyles Yahoo's own page; no API calls, no background fetches.
 // @homepageURL  https://github.com/Cyronemon/yahoo-fantasy-mobile
 // @updateURL    https://raw.githubusercontent.com/Cyronemon/yahoo-fantasy-mobile/main/yahoo-fantasy-mobile.user.js
@@ -131,10 +131,24 @@ html.ym-on #ym-bar {
 
 /* Team summary (replaces the large team card) */
 html.ym-on #ym-summary {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "id mu" "notes mu";
+  /* name + manager line get the full width; notes and the matchup pill share the row below */
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "id id" "notes mu";
   align-items: center; gap: 2px 10px; padding: 10px 8px 4px; color: var(--ym-fg, inherit);
 }
-#ym-summary .ym-id { grid-area: id; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; min-width: 0; }
+#ym-summary .ym-id { grid-area: id; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+#ym-summary .ym-name-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+#ym-summary .ym-name-row .ym-team { min-width: 0; flex: 0 1 auto; }
+#ym-summary .ym-name-row .ym-tag { flex: none; }
+#ym-summary .ym-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; font-size: 12px; color: var(--ym-faint); }
+#ym-summary .ym-manager { color: var(--ym-fg, inherit); font-weight: 600; }
+#ym-summary .ym-sub > * + .ym-rec::before { content: "·"; margin-right: 8px; }
+#ym-summary .ym-level { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+#ym-summary .ym-level::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ym-tier, #9aa3ad); }
+#ym-summary .ym-level[data-tier="bronze"] { --ym-tier: #b0703c; }
+#ym-summary .ym-level[data-tier="silver"] { --ym-tier: #9aa3ad; }
+#ym-summary .ym-level[data-tier="gold"] { --ym-tier: #d4a017; }
+#ym-summary .ym-level[data-tier="platinum"] { --ym-tier: #6fb3c8; }
+#ym-summary .ym-level[data-tier="diamond"] { --ym-tier: #5b8def; }
 #ym-summary .ym-team {
   font: inherit; font-size: 17px; font-weight: 700; line-height: 1.2; color: inherit; background: none; border: 0; padding: 0;
   cursor: pointer; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -148,6 +162,8 @@ html.ym-on #ym-summary {
   font-size: 12px; color: inherit; text-decoration: none; white-space: nowrap;
 }
 #ym-summary .ym-mu b { font-size: 14px; }
+#ym-summary .ym-mu { max-width: 100%; justify-self: end; margin-top: 4px; }
+#ym-summary .ym-mu-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 #ym-summary .ym-notes { grid-area: notes; font-size: 11px; color: var(--ym-faint); }
 html.ym-on:not(.ym-show-card) #teamnotes.ym-compacted { display: none !important; }
 
@@ -1040,17 +1056,26 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
     const muTitle = text(mu && mu.querySelector('.Pbot-med')).replace(/^Week\s+/i, 'Wk ');
     const scores = mu ? $$('.Fz-lg', mu).map(text) : [];
 
+    // Manager name(s) and Yahoo's manager level ("Gold 785") from the card's caption.
+    const caption = $('.caption', card);
+    const managers = caption ? $$('li:first-child a', caption).map(text).filter(Boolean).join(', ') : '';
+    const level = caption ? $$('a', caption).map(text).find(t => /^(bronze|silver|gold|platinum|diamond)\s+\d+$/i.test(t)) : '';
+
     const notes = teamNotes();
     const { opp } = rememberLeague();
     const summary = el('div', { id: 'ym-summary' },
       el('div', { class: 'ym-id' },
-        el('button', {
-          type: 'button', class: 'ym-team', title: 'League teams', 'data-ym-sheet': 'ym-teams', onclick: openTeams,
-        }, name),
-        teamId === opp ? el('span', { class: 'ym-tag ym-opp-tag' }, 'Current opponent') : null,
-        el('span', { class: 'ym-rec' }, [record, place].filter(Boolean).join(' · '))),
+        el('div', { class: 'ym-name-row' },
+          el('button', {
+            type: 'button', class: 'ym-team', title: 'League teams', 'data-ym-sheet': 'ym-teams', onclick: openTeams,
+          }, name),
+          teamId === opp ? el('span', { class: 'ym-tag ym-opp-tag' }, 'Current opponent') : null),
+        el('div', { class: 'ym-sub' },
+          managers ? el('span', { class: 'ym-manager' }, managers) : null,
+          level ? el('span', { class: 'ym-level', 'data-tier': level.split(' ')[0].toLowerCase() }, level) : null,
+          el('span', { class: 'ym-rec' }, [record, place].filter(Boolean).join(' · ')))),
       mu ? el('a', { class: 'ym-mu', href: cardMatchup().href || matchupHref() },
-        muTitle || 'Matchup',
+        el('span', { class: 'ym-mu-t' }, muTitle || 'Matchup'),
         scores.length === 2 ? el('b', {}, `${scores[0]}–${scores[1]}`) : null) : null,
       notes.chips.length ? el('span', { class: 'ym-notes' }, notes.chips.join(' · ')) : null,
     );
