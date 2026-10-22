@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Yahoo Fantasy Basketball – Mobile
 // @namespace    https://github.com/Cyronemon/yahoo-fantasy-mobile
-// @version      0.5.0
+// @version      0.5.1
 // @description  Compact phone layout for the Yahoo Fantasy Basketball desktop site. Restyles Yahoo's own page; no API calls, no background fetches.
 // @homepageURL  https://github.com/Cyronemon/yahoo-fantasy-mobile
 // @updateURL    https://raw.githubusercontent.com/Cyronemon/yahoo-fantasy-mobile/main/yahoo-fantasy-mobile.user.js
@@ -250,117 +250,117 @@ html.ym-on #fantasy_start_active_overlay dialog { width: auto !important; max-wi
 
 /* Roster table: one compact block per player */
 html.ym-on #team-roster .tablewrap { overflow: visible !important; width: auto !important; }
-html.ym-on table.ym-roster {
+html.ym-on table[data-ym-table~="roster"] {
   display: block !important; width: 100% !important; min-width: 0 !important; overflow: visible !important;
   font-size: 13px; border: 0 !important; margin: 0 !important;
 }
-html.ym-on table.ym-roster > thead,
-html.ym-on table.ym-roster > tbody,
-html.ym-on table.ym-roster > tfoot { display: block; }
-html.ym-on table.ym-roster > caption { display: none; }
-html.ym-on table.ym-roster > thead {
+html.ym-on table[data-ym-table~="roster"] > thead,
+html.ym-on table[data-ym-table~="roster"] > tbody,
+html.ym-on table[data-ym-table~="roster"] > tfoot { display: block; }
+html.ym-on table[data-ym-table~="roster"] > caption { display: none; }
+html.ym-on table[data-ym-table~="roster"] > thead {
   position: sticky; top: var(--ym-bar-h); z-index: 50;
   background: var(--ym-bg, #fff); border-bottom: 1px solid var(--ym-line);
 }
-html.ym-on table.ym-roster > thead > tr:not(:last-child) { display: none !important; }
-html.ym-on table.ym-roster tr:not([style*="none"]) {
+html.ym-on table[data-ym-table~="roster"] > thead > tr:not(:last-child) { display: none !important; }
+html.ym-on table[data-ym-table~="roster"] tr:not([style*="none"]) {
   display: grid !important;
   grid-template-columns: 44px repeat(var(--ym-n, 9), minmax(0, 1fr));
   align-items: center; height: auto !important; padding: 0 6px 0 4px; box-sizing: border-box;
 }
-html.ym-on table.ym-roster > tbody > tr { border-top: 1px solid var(--ym-line); }
-html.ym-on table.ym-roster td,
-html.ym-on table.ym-roster th {
+html.ym-on table[data-ym-table~="roster"] > tbody > tr { border-top: 1px solid var(--ym-line); }
+html.ym-on table[data-ym-table~="roster"] td,
+html.ym-on table[data-ym-table~="roster"] th {
   display: block; width: auto !important; min-width: 0; height: auto !important;
   padding: 0 !important; border: 0 !important; background: none !important; text-align: center;
 }
-html.ym-on table.ym-roster [data-ym="hide"] { display: none !important; }
+html.ym-on table[data-ym-table~="roster"] [data-ym="hide"] { display: none !important; }
 
 /* header labels */
-html.ym-on table.ym-roster th { font-size: 10px !important; font-weight: 700; letter-spacing: .02em; color: var(--ym-faint); padding: 7px 0 6px !important; white-space: nowrap; }
-html.ym-on table.ym-roster th[data-ym="stat"] { text-align: center !important; }
-html.ym-on table.ym-roster th a { color: inherit !important; }
-html.ym-on table.ym-roster th[data-ym="pos"] { grid-column: 1; grid-row: 1; } /* matchup tables put it mid-row */
-html.ym-on table.ym-roster th[data-ym="player"] { display: none; text-align: left; padding-left: 6px !important; }
+html.ym-on table[data-ym-table~="roster"] th { font-size: 10px !important; font-weight: 700; letter-spacing: .02em; color: var(--ym-faint); padding: 7px 0 6px !important; white-space: nowrap; }
+html.ym-on table[data-ym-table~="roster"] th[data-ym="stat"] { text-align: center !important; }
+html.ym-on table[data-ym-table~="roster"] th a { color: inherit !important; }
+html.ym-on table[data-ym-table~="roster"] th[data-ym="pos"] { grid-column: 1; grid-row: 1; } /* matchup tables put it mid-row */
+html.ym-on table[data-ym-table~="roster"] th[data-ym="player"] { display: none; text-align: left; padding-left: 6px !important; }
 
 /* position chip: Yahoo's own swap target */
-html.ym-on table.ym-roster td[data-ym="pos"] { grid-column: 1; grid-row: 1 / span 2; align-self: center; }
-html.ym-on table.ym-roster .pos-label {
+html.ym-on table[data-ym-table~="roster"] td[data-ym="pos"] { grid-column: 1; grid-row: 1 / span 2; align-self: center; }
+html.ym-on table[data-ym-table~="roster"] .pos-label {
   display: inline-flex !important; align-items: center; justify-content: center;
   width: auto !important; min-width: 36px !important; height: 26px; padding: 0 4px; box-sizing: border-box;
   border-radius: 7px; font-size: 11px; font-weight: 700; letter-spacing: .02em;
   background: color-mix(in srgb, var(--ym-accent) 16%, transparent); color: inherit;
 }
-html.ym-on table.ym-roster tr.bench .pos-label { background: color-mix(in srgb, currentColor 9%, transparent); }
-html.ym-on table.ym-roster tr[data-pos="IL"] .pos-label,
-html.ym-on table.ym-roster tr[data-pos="IL+"] .pos-label { background: color-mix(in srgb, #cc0e25 18%, transparent); }
-html.ym-on table.ym-roster > tbody > tr:not(.editable) .pos-label { background: none; box-shadow: inset 0 0 0 1px var(--ym-line); }
-html.ym-on table.ym-roster > tbody > tr:not(.bench) + tr.bench { border-top: 2px solid color-mix(in srgb, currentColor 28%, transparent); }
+html.ym-on table[data-ym-table~="roster"] tr.bench .pos-label { background: color-mix(in srgb, currentColor 9%, transparent); }
+html.ym-on table[data-ym-table~="roster"] tr[data-pos="IL"] .pos-label,
+html.ym-on table[data-ym-table~="roster"] tr[data-pos="IL+"] .pos-label { background: color-mix(in srgb, #cc0e25 18%, transparent); }
+html.ym-on table[data-ym-table~="roster"] > tbody > tr:not(.editable) .pos-label { background: none; box-shadow: inset 0 0 0 1px var(--ym-line); }
+html.ym-on table[data-ym-table~="roster"] > tbody > tr:not(.bench) + tr.bench { border-top: 2px solid color-mix(in srgb, currentColor 28%, transparent); }
 
 /* player line */
-html.ym-on table.ym-roster td[data-ym="player"] { grid-column: 2 / -1; grid-row: 1; text-align: left; padding: 7px 0 1px 6px !important; overflow: hidden; }
-html.ym-on table.ym-roster td[data-ym="player"] > div { width: auto !important; }
-html.ym-on table.ym-roster td[data-ym="player"] .Lh-0.Relative,
-html.ym-on table.ym-roster td[data-ym="player"] img { display: none !important; }
-html.ym-on table.ym-roster td[data-ym="player"] .D-f.Jc-fs { padding: 0 !important; }
-html.ym-on table.ym-roster td[data-ym="player"] .Pstart-sm[style] { width: auto !important; flex: 1; min-width: 0; padding: 0 !important; }
-html.ym-on table.ym-roster td[data-ym="player"] .D-f.Jc-sb { display: block !important; }
-html.ym-on table.ym-roster td[data-ym="player"] .Ta-start.Truncate { display: flex; align-items: baseline; gap: 8px; min-width: 0; overflow: hidden; }
-html.ym-on table.ym-roster .ysf-player-name { display: flex !important; align-items: baseline; gap: 5px; min-width: 0; flex: 0 1 auto; overflow: hidden; line-height: 18px !important; }
-html.ym-on table.ym-roster .ysf-player-name a.name { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 14px; font-weight: 600; }
-html.ym-on table.ym-roster .ysf-player-name .D-b { display: inline !important; flex: none; color: var(--ym-faint); }
-html.ym-on table.ym-roster .ysf-player-name .D-b .Fz-xxs { font-size: 11px !important; }
-html.ym-on table.ym-roster .ysf-player-status { flex: none; order: 1; }
-html.ym-on table.ym-roster .ysf-player-status span { padding: 1px 4px !important; border-radius: 4px; font-size: 10px; font-weight: 700; background: color-mix(in srgb, #cc0e25 14%, transparent); }
-html.ym-on table.ym-roster .player-status { flex: none; order: 2; padding: 0 !important; }
-html.ym-on table.ym-roster .ysf-player-name .D-b { order: 3; }
-html.ym-on table.ym-roster .ysf-player-detail { margin-left: auto; flex: none; font-size: 11px !important; color: var(--ym-faint); line-height: 18px !important; }
-html.ym-on table.ym-roster .ysf-player-detail a { color: inherit !important; }
-html.ym-on table.ym-roster .ysf-player-detail[data-ym-opp]:not(:has(.ysf-game-status a))::before { content: attr(data-ym-opp); }
+html.ym-on table[data-ym-table~="roster"] td[data-ym="player"] { grid-column: 2 / -1; grid-row: 1; text-align: left; padding: 7px 0 1px 6px !important; overflow: hidden; }
+html.ym-on table[data-ym-table~="roster"] td[data-ym="player"] > div { width: auto !important; }
+html.ym-on table[data-ym-table~="roster"] td[data-ym="player"] .Lh-0.Relative,
+html.ym-on table[data-ym-table~="roster"] td[data-ym="player"] img { display: none !important; }
+html.ym-on table[data-ym-table~="roster"] td[data-ym="player"] .D-f.Jc-fs { padding: 0 !important; }
+html.ym-on table[data-ym-table~="roster"] td[data-ym="player"] .Pstart-sm[style] { width: auto !important; flex: 1; min-width: 0; padding: 0 !important; }
+html.ym-on table[data-ym-table~="roster"] td[data-ym="player"] .D-f.Jc-sb { display: block !important; }
+html.ym-on table[data-ym-table~="roster"] td[data-ym="player"] .Ta-start.Truncate { display: flex; align-items: baseline; gap: 8px; min-width: 0; overflow: hidden; }
+html.ym-on table[data-ym-table~="roster"] .ysf-player-name { display: flex !important; align-items: baseline; gap: 5px; min-width: 0; flex: 0 1 auto; overflow: hidden; line-height: 18px !important; }
+html.ym-on table[data-ym-table~="roster"] .ysf-player-name a.name { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 14px; font-weight: 600; }
+html.ym-on table[data-ym-table~="roster"] .ysf-player-name .D-b { display: inline !important; flex: none; color: var(--ym-faint); }
+html.ym-on table[data-ym-table~="roster"] .ysf-player-name .D-b .Fz-xxs { font-size: 11px !important; }
+html.ym-on table[data-ym-table~="roster"] .ysf-player-status { flex: none; order: 1; }
+html.ym-on table[data-ym-table~="roster"] .ysf-player-status span { padding: 1px 4px !important; border-radius: 4px; font-size: 10px; font-weight: 700; background: color-mix(in srgb, #cc0e25 14%, transparent); }
+html.ym-on table[data-ym-table~="roster"] .player-status { flex: none; order: 2; padding: 0 !important; }
+html.ym-on table[data-ym-table~="roster"] .ysf-player-name .D-b { order: 3; }
+html.ym-on table[data-ym-table~="roster"] .ysf-player-detail { margin-left: auto; flex: none; font-size: 11px !important; color: var(--ym-faint); line-height: 18px !important; }
+html.ym-on table[data-ym-table~="roster"] .ysf-player-detail a { color: inherit !important; }
+html.ym-on table[data-ym-table~="roster"] .ysf-player-detail[data-ym-opp]:not(:has(.ysf-game-status a))::before { content: attr(data-ym-opp); }
 
 /* stat line */
-html.ym-on table.ym-roster td[data-ym="stat"] {
+html.ym-on table[data-ym-table~="roster"] td[data-ym="stat"] {
   padding: 1px 0 7px !important; font-size: 12px; font-variant-numeric: tabular-nums; text-align: center !important;
   white-space: nowrap; overflow: hidden; text-overflow: clip;
 }
-html.ym-on table.ym-roster td[data-ym="stat"].ym-empty { color: var(--ym-faint); }
+html.ym-on table[data-ym-table~="roster"] td[data-ym="stat"][data-ym-empty] { color: var(--ym-faint); }
 /* short faint line between stat columns (a dot would read like the decimal in .474) */
-html.ym-on table.ym-roster [data-ym="stat"] ~ [data-ym="stat"] {
+html.ym-on table[data-ym-table~="roster"] [data-ym="stat"] ~ [data-ym="stat"] {
   background: linear-gradient(var(--ym-sep), var(--ym-sep)) left center / 1px 14px no-repeat !important;
 }
 
 /* lineup totals */
-html.ym-on table.ym-roster > tfoot > tr { border-top: 2px solid color-mix(in srgb, currentColor 28%, transparent); }
-html.ym-on table.ym-roster > tfoot td[data-ym="pos"] { display: block !important; visibility: hidden; }
-html.ym-on table.ym-roster > tfoot td[data-ym="player"] {
+html.ym-on table[data-ym-table~="roster"] > tfoot > tr { border-top: 2px solid color-mix(in srgb, currentColor 28%, transparent); }
+html.ym-on table[data-ym-table~="roster"] > tfoot td[data-ym="pos"] { display: block !important; visibility: hidden; }
+html.ym-on table[data-ym-table~="roster"] > tfoot td[data-ym="player"] {
   padding-top: 8px !important; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ym-faint);
 }
-html.ym-on table.ym-roster > tfoot td[data-ym="stat"] { font-weight: 700; padding-bottom: 10px !important; }
+html.ym-on table[data-ym-table~="roster"] > tfoot td[data-ym="stat"] { font-weight: 700; padding-bottom: 10px !important; }
 
 /* players with no game on the selected date */
-html.ym-on table.ym-roster tr.ym-idle td[data-ym="player"] { opacity: .6; }
-html.ym-on:not(.ym-idle-show) table.ym-roster tr.ym-idle td[data-ym="stat"] { display: none !important; }
-html.ym-on:not(.ym-idle-show) table.ym-roster tr.ym-idle td[data-ym="player"] { padding-bottom: 7px !important; }
+html.ym-on table[data-ym-table~="roster"] tr.ym-idle td[data-ym="player"] { opacity: .6; }
+html.ym-on:not(.ym-idle-show) table[data-ym-table~="roster"] tr.ym-idle td[data-ym="stat"] { display: none !important; }
+html.ym-on:not(.ym-idle-show) table[data-ym-table~="roster"] tr.ym-idle td[data-ym="player"] { padding-bottom: 7px !important; }
 
 /* rows whose cells don't line up with the header (e.g. empty slots during a swap) */
-html.ym-on table.ym-roster tr.ym-odd { grid-template-columns: 44px 1fr; }
-html.ym-on table.ym-roster tr.ym-odd > td:not(:first-child) { grid-column: 2; text-align: left; padding: 8px 6px !important; }
-html.ym-on table.ym-roster tr.ym-odd > td:first-child { grid-row: 1 / span 9; }
+html.ym-on table[data-ym-table~="roster"] tr[data-ym-odd] { grid-template-columns: 44px 1fr; }
+html.ym-on table[data-ym-table~="roster"] tr[data-ym-odd] > td:not(:first-child) { grid-column: 2; text-align: left; padding: 8px 6px !important; }
+html.ym-on table[data-ym-table~="roster"] tr[data-ym-odd] > td:first-child { grid-row: 1 / span 9; }
 
 /* too many columns for the phone: let the table scroll sideways instead */
 html.ym-on #team-roster .tablewrap.ym-scroll { overflow-x: auto !important; }
-html.ym-on table.ym-roster.ym-many { width: max-content !important; min-width: 100% !important; }
-html.ym-on table.ym-roster.ym-many tr:not([style*="none"]) { grid-template-columns: 44px repeat(var(--ym-n), 46px); }
+html.ym-on table[data-ym-table~="roster"][data-ym-table~="many"] { width: max-content !important; min-width: 100% !important; }
+html.ym-on table[data-ym-table~="roster"][data-ym-table~="many"] tr:not([style*="none"]) { grid-template-columns: 44px repeat(var(--ym-n), 46px); }
 
 /* landscape / wide: everything on one line */
-html.ym-on.ym-wide table.ym-roster tr:not([style*="none"]) {
+html.ym-on.ym-wide table[data-ym-table~="roster"] tr:not([style*="none"]) {
   grid-template-columns: 48px minmax(200px, 1fr) repeat(var(--ym-n, 9), 50px);
 }
-html.ym-on.ym-wide table.ym-roster td[data-ym="pos"] { grid-row: 1; }
-html.ym-on.ym-wide table.ym-roster td[data-ym="player"] { grid-column: 2; padding: 6px 8px 6px 6px !important; }
-html.ym-on.ym-wide table.ym-roster th[data-ym="player"] { display: block !important; grid-column: 2; }
-html.ym-on.ym-wide table.ym-roster td[data-ym="stat"] { padding: 6px 0 !important; }
-html.ym-on.ym-wide:not(.ym-idle-show) table.ym-roster tr.ym-idle td[data-ym="stat"] { display: block !important; visibility: hidden; }
+html.ym-on.ym-wide table[data-ym-table~="roster"] td[data-ym="pos"] { grid-row: 1; }
+html.ym-on.ym-wide table[data-ym-table~="roster"] td[data-ym="player"] { grid-column: 2; padding: 6px 8px 6px 6px !important; }
+html.ym-on.ym-wide table[data-ym-table~="roster"] th[data-ym="player"] { display: block !important; grid-column: 2; }
+html.ym-on.ym-wide table[data-ym-table~="roster"] td[data-ym="stat"] { padding: 6px 0 !important; }
+html.ym-on.ym-wide:not(.ym-idle-show) table[data-ym-table~="roster"] tr.ym-idle td[data-ym="stat"] { display: block !important; visibility: hidden; }
 
 /* ---- Matchup page ---- */
 html.ym-on.ym-page-matchup #legend { display: none !important; }
@@ -412,29 +412,30 @@ html.ym-on [id^="matchupcontent"] { overflow: visible !important; } /* lets the 
 html.ym-on #matchup-wall-header { margin: 0 !important; padding: 0 !important; }
 html.ym-on #matchup-wall-header > :not(table):not(:has(table)) { display: none !important; } /* "*Non-scoring stats" note */
 html.ym-on #matchup-wall-header * { width: auto !important; min-width: 0 !important; }
-html.ym-on table.ym-cats { display: block !important; width: 100% !important; margin: 4px 0 0 !important; border: 0 !important; font-size: 13px; }
-html.ym-on table.ym-cats > thead,
-html.ym-on table.ym-cats > tbody { display: block; }
+html.ym-on table[data-ym-table~="cats"] { display: block !important; width: 100% !important; margin: 4px 0 0 !important; border: 0 !important; font-size: 13px; }
+html.ym-on table[data-ym-table~="cats"] > thead,
+html.ym-on table[data-ym-table~="cats"] > tbody { display: block; }
 /* team column shows just the logo; names are in the header and the roster toggle */
-html.ym-on table.ym-cats tr {
+html.ym-on table[data-ym-table~="cats"] tr {
   display: grid !important; grid-template-columns: 26px repeat(9, minmax(0, 1fr)); column-gap: 2px;
   align-items: center; padding: 0 4px 0 6px; height: auto !important;
 }
-html.ym-on table.ym-cats > tbody > tr { border-top: 1px solid var(--ym-line); }
-html.ym-on table.ym-cats td,
-html.ym-on table.ym-cats th {
+html.ym-on table[data-ym-table~="cats"] > tbody > tr { border-top: 1px solid var(--ym-line); }
+html.ym-on table[data-ym-table~="cats"] td,
+html.ym-on table[data-ym-table~="cats"] th {
   display: block; padding: 7px 0 !important; border: 0 !important; background: none !important; text-align: center !important;
   white-space: nowrap; overflow: hidden; font-variant-numeric: tabular-nums;
 }
-html.ym-on table.ym-cats [data-ym="hide"] { display: none !important; }
-html.ym-on table.ym-cats th { font-size: 10px !important; font-weight: 700; color: var(--ym-faint); padding: 6px 0 !important; }
-html.ym-on table.ym-cats [data-ym="team"] { font-size: 0 !important; line-height: 0; }
+html.ym-on table[data-ym-table~="cats"] [data-ym="hide"] { display: none !important; }
+html.ym-on table[data-ym-table~="cats"] th { font-size: 10px !important; font-weight: 700; color: var(--ym-faint); padding: 6px 0 !important; }
+html.ym-on table[data-ym-table~="cats"] [data-ym="team"] { font-size: 0 !important; line-height: 0; }
 /* Yahoo pads the team cell's inner box 16px, which pushed the logo under the first value */
-html.ym-on table.ym-cats [data-ym="team"] * { padding: 0 !important; margin: 0 !important; width: auto !important; }
-html.ym-on table.ym-cats td[data-ym="team"] > div > div { display: flex !important; justify-content: center; }
-html.ym-on table.ym-cats [data-ym="team"] img { width: 22px !important; height: 22px !important; }
-html.ym-on table.ym-cats td[data-ym="stat"] { font-weight: 400; font-size: 12px !important; }
-html.ym-on table.ym-cats td[data-ym="stat"].Fw-b {
+html.ym-on table[data-ym-table~="cats"] [data-ym="team"] * { padding: 0 !important; margin: 0 !important; width: auto !important; }
+html.ym-on table[data-ym-table~="cats"] td[data-ym="team"] > div,
+html.ym-on table[data-ym-table~="cats"] td[data-ym="team"] > div > div { display: flex !important; justify-content: center; }
+html.ym-on table[data-ym-table~="cats"] [data-ym="team"] img { width: 22px !important; height: 22px !important; }
+html.ym-on table[data-ym-table~="cats"] td[data-ym="stat"] { font-weight: 400; font-size: 12px !important; }
+html.ym-on table[data-ym-table~="cats"] td[data-ym="stat"]:is(.Fw-b, [class~="Fw(b)"]) { /* old / React page */
   font-weight: 700; color: var(--ym-accent);
   background: color-mix(in srgb, var(--ym-accent) 14%, transparent) !important; border-radius: 6px;
 }
@@ -478,15 +479,70 @@ html.ym-on #ym-sides { display: flex; margin: 12px 8px 6px; border: 1px solid va
 #ym-sides button + button { border-left: 1px solid var(--ym-line); }
 #ym-sides button[aria-selected="true"] { background: var(--ym-accent); color: #fff; }
 /* rosters: same rows as My Team, one team at a time */
-html.ym-on table.ym-roster[data-ym-show="a"] [data-ym-side="b"],
-html.ym-on table.ym-roster[data-ym-show="b"] [data-ym-side="a"] { display: none !important; }
-html.ym-on table.ym-mu-roster td[data-ym="pos"] {
+html.ym-on table[data-ym-table~="roster"][data-ym-show="a"] [data-ym-side="b"],
+html.ym-on table[data-ym-table~="roster"][data-ym-show="b"] [data-ym-side="a"] { display: none !important; }
+html.ym-on table[data-ym-table~="mu"] td[data-ym="pos"] {
   justify-self: center; align-self: center; display: flex; align-items: center; justify-content: center;
-  min-width: 36px; height: 26px; padding: 0 4px !important; box-sizing: border-box; border-radius: 7px;
+  min-width: 36px; height: 26px !important; padding: 0 4px !important; box-sizing: border-box; border-radius: 7px;
   font-size: 11px; font-weight: 700; color: inherit !important;
   background: color-mix(in srgb, currentColor 9%, transparent) !important;
 }
-html.ym-on table.ym-mu-roster { border: 0 !important; }
+html.ym-on table[data-ym-table~="mu"] { border: 0 !important; }
+
+/* React matchup page (#redzone, Oct 2026): header, categories, stat tabs, rosters, scoreboard */
+html.ym-on #redzone, html.ym-on #redzone .RedZone, html.ym-on #redzone .RedZone * { max-width: 100%; }
+html.ym-on #redzone [class*="Px(15px)"], html.ym-on #redzone [class*="Px(10px)"] { padding-left: 0 !important; padding-right: 0 !important; }
+html.ym-on #redzone table { margin: 4px 0 !important; box-shadow: none !important; }
+html.ym-on #matchup { overflow: visible !important; height: auto !important; } /* lets the roster header stick */
+/* "Today's Stats | Matchup Totals" as chips; "Show Dropped Players" below them */
+html.ym-on .RedZone > div:has(> ul + label) { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 10px 0 0 !important; }
+html.ym-on .RedZone > div:has(> ul + label) > ul { display: flex !important; gap: 6px; padding: 0 !important; }
+html.ym-on .RedZone > div:has(> ul + label) > ul > li {
+  padding: 6px 12px !important; border: 1px solid var(--ym-line); border-radius: 15px; font-size: 12px;
+}
+html.ym-on .RedZone > div:has(> ul + label) > ul > li[class~="Fw(b)"] { background: var(--ym-accent); border-color: transparent; }
+html.ym-on .RedZone > div:has(> ul + label) > ul > li[class~="Fw(b)"] a { color: #fff !important; }
+html.ym-on .RedZone > div:has(> ul + label) > label { position: static !important; font-size: 12px; }
+/* team lines: big header at the top, compact rows in the league scoreboard */
+html.ym-on [data-ym-line] {
+  display: grid !important; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 6px;
+}
+html.ym-on [data-ym-line] > * { width: auto !important; min-width: 0; flex: none !important; }
+html.ym-on [data-ym-line] [data-ym-box] > div { padding: 0 !important; min-width: 0; }
+html.ym-on [data-ym-line] [data-ym-box] a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+html.ym-on [data-ym-line] [data-ym-box="mid"] > div { display: flex !important; align-items: center; gap: 8px; }
+html.ym-on [data-ym-line] [data-ym-box="mid"] > div > div { flex: none !important; min-width: 0 !important; width: auto !important; }
+html.ym-on [data-ym-line] [data-ym-box="mid"] .felo-matchup-button { padding: 3px 8px !important; font-size: 11px !important; }
+html.ym-on [data-ym-line="head"] { padding: 8px 6px 4px; }
+html.ym-on [data-ym-line="head"] [data-ym-box]:not([data-ym-box="mid"]) > div {
+  flex-direction: column !important; align-items: center !important; text-align: center;
+}
+html.ym-on [data-ym-line="head"] [data-ym-box]:not([data-ym-box="mid"]) > div > div { align-items: center !important; }
+html.ym-on [data-ym-line="head"] img { width: 44px !important; height: 44px !important; margin-bottom: 4px; }
+html.ym-on [data-ym-line="head"] [data-ym-box] a { font-size: 15px !important; font-weight: 700; white-space: normal; text-align: center; }
+html.ym-on [data-ym-line="head"] [data-ym-box="mid"] { font-size: 28px !important; font-weight: 700; }
+html.ym-on [data-ym-line="row"] { padding: 8px; }
+html.ym-on [data-ym-line="row"] [data-ym-box="a"] > div { flex-direction: row !important; justify-content: flex-start; gap: 8px; }
+html.ym-on [data-ym-line="row"] [data-ym-box="b"] > div { flex-direction: row-reverse !important; justify-content: flex-start; gap: 8px; }
+html.ym-on [data-ym-line="row"] [data-ym-box="a"] > div > div { align-items: flex-start !important; text-align: left; }
+html.ym-on [data-ym-line="row"] [data-ym-box="b"] > div > div { align-items: flex-end !important; text-align: right; }
+html.ym-on [data-ym-line="row"] img { width: 30px !important; height: 30px !important; flex: none; }
+html.ym-on [data-ym-line="row"] [data-ym-box] a { font-size: 13px !important; }
+html.ym-on [data-ym-line="row"] [data-ym-box]:not([data-ym-box="mid"]) > div > div > div:nth-child(2) { display: none; } /* manager name */
+html.ym-on [data-ym-line="row"] [data-ym-box="mid"] { font-size: 17px !important; font-weight: 700; }
+html.ym-on [data-ym-line] [data-ym-box]:not([data-ym-box="mid"]) > div > div > div { font-size: 11px; }
+/* React roster player cell (no .ysf-player-name): name, team-pos, notes icon, game status on one line */
+html.ym-on table[data-ym-table~="mu"] td[data-ym="player"] > div:not(:has(.ysf-player-name)) {
+  display: flex !important; align-items: baseline; gap: 6px; min-width: 0; white-space: nowrap;
+}
+html.ym-on table[data-ym-table~="mu"] td[data-ym="player"] > div:not(:has(.ysf-player-name)) > a:first-child {
+  min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; font-size: 14px !important; font-weight: 600;
+}
+html.ym-on table[data-ym-table~="mu"] td[data-ym="player"] > div:not(:has(.ysf-player-name)) > span { flex: none; padding: 0 !important; font-size: 11px !important; color: var(--ym-faint); }
+html.ym-on table[data-ym-table~="mu"] td[data-ym="player"] > div:not(:has(.ysf-player-name)) > div { float: none !important; flex: none; order: 2; }
+html.ym-on table[data-ym-table~="mu"] td[data-ym="player"] > div:not(:has(.ysf-player-name)) > :last-child:not(div) {
+  order: 3; margin-left: auto; flex: none; display: inline !important; font-size: 11px !important; color: var(--ym-faint) !important;
+}
 
 /* ---- Players page (free agents) ---- */
 html.ym-on.ym-page-players #page-header { margin: 0 !important; padding: 10px 8px 0 !important; }
@@ -514,30 +570,30 @@ html.ym-on #playerfilter .selects select { width: 100% !important; max-width: no
 html.ym-on #playerfilter .selects .Control-label { font-size: 11px !important; }
 /* player rows: [+ / star] | name line, status line, 9-category line */
 html.ym-on #players-table-wrapper, html.ym-on #players-table-wrapper .players { overflow: visible !important; width: auto !important; }
-html.ym-on table.ym-fa > tbody > tr { grid-template-rows: auto auto auto; }
-html.ym-on table.ym-fa td[data-ym="add"] { grid-column: 1; grid-row: 1 / span 2; justify-self: center; align-self: center; }
-html.ym-on table.ym-fa td[data-ym="watch"] { grid-column: 1; grid-row: 3; justify-self: center; align-self: center; }
-html.ym-on table.ym-fa td[data-ym="add"] a {
+html.ym-on table[data-ym-table~="fa"] > tbody > tr { grid-template-rows: auto auto auto; }
+html.ym-on table[data-ym-table~="fa"] td[data-ym="add"] { grid-column: 1; grid-row: 1 / span 2; justify-self: center; align-self: center; }
+html.ym-on table[data-ym-table~="fa"] td[data-ym="watch"] { grid-column: 1; grid-row: 3; justify-self: center; align-self: center; }
+html.ym-on table[data-ym-table~="fa"] td[data-ym="add"] a {
   display: flex !important; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%;
   font-size: 18px !important; background: color-mix(in srgb, #1a9f53 16%, transparent);
 }
-html.ym-on table.ym-fa td[data-ym="watch"] a { display: flex !important; align-items: center; justify-content: center; width: 30px; height: 26px; font-size: 15px !important; }
-html.ym-on table.ym-fa td[data-ym="player"] { grid-row: 1; padding-bottom: 0 !important; }
-html.ym-on table.ym-fa td[data-ym="status"],
-html.ym-on table.ym-fa td[data-ym="rank"],
-html.ym-on table.ym-fa td[data-ym="ros"] {
+html.ym-on table[data-ym-table~="fa"] td[data-ym="watch"] a { display: flex !important; align-items: center; justify-content: center; width: 30px; height: 26px; font-size: 15px !important; }
+html.ym-on table[data-ym-table~="fa"] td[data-ym="player"] { grid-row: 1; padding-bottom: 0 !important; }
+html.ym-on table[data-ym-table~="fa"] td[data-ym="status"],
+html.ym-on table[data-ym-table~="fa"] td[data-ym="rank"],
+html.ym-on table[data-ym-table~="fa"] td[data-ym="ros"] {
   grid-row: 2; text-align: left !important; padding: 0 0 2px 6px !important; font-size: 11px; color: var(--ym-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-html.ym-on table.ym-fa td[data-ym="status"] { grid-column: 2 / span 3; font-weight: 700; }
-html.ym-on table.ym-fa td[data-ym="rank"] { grid-column: 5 / span 3; }
-html.ym-on table.ym-fa td[data-ym="ros"] { grid-column: 8 / span 3; }
-html.ym-on table.ym-fa :is(td[data-ym="status"], td[data-ym="rank"], td[data-ym="ros"]) * { display: inline !important; }
-html.ym-on table.ym-fa td[data-ym="rank"]::before { content: "Rank "; }
-html.ym-on table.ym-fa td[data-ym="ros"]::after { content: " rostered"; }
-html.ym-on table.ym-fa td[data-ym="stat"] { grid-row: 3; }
+html.ym-on table[data-ym-table~="fa"] td[data-ym="status"] { grid-column: 2 / span 3; font-weight: 700; }
+html.ym-on table[data-ym-table~="fa"] td[data-ym="rank"] { grid-column: 5 / span 3; }
+html.ym-on table[data-ym-table~="fa"] td[data-ym="ros"] { grid-column: 8 / span 3; }
+html.ym-on table[data-ym-table~="fa"] :is(td[data-ym="status"], td[data-ym="rank"], td[data-ym="ros"]) * { display: inline !important; }
+html.ym-on table[data-ym-table~="fa"] td[data-ym="rank"]::before { content: "Rank "; }
+html.ym-on table[data-ym-table~="fa"] td[data-ym="ros"]::after { content: " rostered"; }
+html.ym-on table[data-ym-table~="fa"] td[data-ym="stat"] { grid-row: 3; }
 /* header: only the category labels (col 1 kept as a spacer) */
-html.ym-on table.ym-fa > thead [data-ym]:not([data-ym="stat"]):not([data-ym="add"]) { display: none !important; }
-html.ym-on table.ym-fa > thead [data-ym="add"] { grid-column: 1; grid-row: 1; font-size: 0 !important; }
+html.ym-on table[data-ym-table~="fa"] > thead [data-ym]:not([data-ym="stat"]):not([data-ym="add"]) { display: none !important; }
+html.ym-on table[data-ym-table~="fa"] > thead [data-ym="add"] { grid-column: 1; grid-row: 1; font-size: 0 !important; }
 /* paging */
 html.ym-on #players-table > .Grid-spread-mid { display: flex !important; justify-content: center; padding: 12px 8px !important; }
 html.ym-on #players-table > .Grid-spread-mid > :not(:has(.pagingnavlist)) { display: none !important; } /* icon legend */
@@ -775,6 +831,14 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
     else if (node.getAttribute(name) !== value) node.setAttribute(name, value);
   }
 
+  // Tables are tagged with data attributes rather than classes: React-rendered
+  // tables (Matchup page) can rewrite their class attribute on updates.
+  function tagTable(table, tag, on = true) {
+    const tags = new Set((table.getAttribute('data-ym-table') || '').split(' ').filter(Boolean));
+    if (on) tags.add(tag); else tags.delete(tag);
+    setAttr(table, 'data-ym-table', [...tags].join(' ') || null);
+  }
+
   function isTransparent(color) {
     return !color || color === 'transparent' || /rgba\([^)]*,\s*0\)$/.test(color);
   }
@@ -824,12 +888,12 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
   // Remember my current opponent and matchup link so they're known on other teams' pages too.
   function rememberLeague() {
     const own = ownTeamId();
-    const { ids, href } = cardMatchup();
+    const { ids } = cardMatchup();
     const saved = readJSON(LEAGUE_KEY, {});
     const next = { ...saved, own };
+    delete next.mu; // older versions stored a matchup link here
     if (teamId === own) {
       next.opp = ids.find(id => id !== own) || saved.opp;
-      next.mu = href || saved.mu;
     } else if (ids.includes(own)) {
       next.opp = teamId; // this team is playing me this week
     }
@@ -837,7 +901,8 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
     return next;
   }
 
-  const matchupHref = () => readJSON(LEAGUE_KEY, {}).mu || `/nba/${leagueId}/matchup`;
+  // Yahoo's plain matchup address opens my current matchup, current week, totals.
+  const matchupHref = () => `/nba/${leagueId}/matchup`;
 
   function buildBar() {
     if ($('#ym-bar')) return;
@@ -1103,7 +1168,7 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
     const cols = classifyColumns(table);
     if (!cols) return;
     const { kinds, labels } = cols;
-    table.classList.add('ym-roster');
+    tagTable(table, 'roster');
 
     // If this view has the scoring categories, show only those on the stat line.
     const hasCats = labels.some((l, i) => kinds[i] === 'stat' && CATS.includes(l.toUpperCase()));
@@ -1111,7 +1176,7 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
       k === 'stat' && hasCats && !CATS.includes(labels[i].toUpperCase()) ? 'hide' : k);
     const n = finalKinds.filter(k => k === 'stat').length;
     table.style.setProperty('--ym-n', String(Math.max(n, 1)));
-    table.classList.toggle('ym-many', n > 10);
+    tagTable(table, 'many', n > 10);
     table.closest('.tablewrap')?.classList.toggle('ym-scroll', n > 10);
 
     const headKinds = cellKinds(cols.labelRow, finalKinds) || [];
@@ -1126,7 +1191,7 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
   function enhanceRow(row, columnKinds) {
     const cells = Array.from(row.cells);
     const kinds = cellKinds(row, columnKinds);
-    row.classList.toggle('ym-odd', !kinds && cells.length > 0);
+    setAttr(row, 'data-ym-odd', !kinds && cells.length > 0 ? '' : null);
     if (!kinds) return;
 
     let opp = '';
@@ -1136,7 +1201,7 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
       if (kinds[i] === 'opp') opp = text(cell);
       if (kind === 'stat') {
         const v = text(cell);
-        cell.classList.toggle('ym-empty', v === '' || v === '-' || v === '-/-');
+        setAttr(cell, 'data-ym-empty', v === '' || v === '-' || v === '-/-' ? '' : null);
       }
     });
 
@@ -1164,7 +1229,7 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
       let slot = 0;
       const spans = cells.map(cell => { const at = slot; slot += cell.colSpan; return at; });
       const odd = slot !== slots.length;
-      row.classList.toggle('ym-odd', odd && cells.length > 0);
+      setAttr(row, 'data-ym-odd', odd && cells.length > 0 ? '' : null);
       if (odd) continue;
       cells.forEach((cell, i) => {
         const { kind, side } = slots[spans[i]];
@@ -1172,7 +1237,7 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
         setAttr(cell, 'data-ym-side', side || null);
         if (kind === 'stat' && cell.tagName === 'TD') {
           const v = text(cell);
-          cell.classList.toggle('ym-empty', v === '' || v === '-' || v === '-/-');
+          setAttr(cell, 'data-ym-empty', v === '' || v === '-' || v === '-/-' ? '' : null);
         }
       });
     }
@@ -1194,21 +1259,42 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
   // ---------------------------------------------------------------------------
   let matchupSide = null; // 'a' | 'b': which team's roster is shown on the phone
 
+  const isTeamLink = a => /^\/nba\/\d+\/\d+$/.test(pathOf(a)) && !!text(a);
+
+  // "Team A | score vs score | Team B" blocks: the page header and each line of
+  // the league scoreboard below. Tag them (and their three parts) for styling.
+  function markMatchupLines() {
+    const hasTeam = box => box.querySelector('img') && $$('a', box).some(isTeamLink);
+    const lines = $$('#redzone div').filter(d => d.childElementCount === 3
+      && /^(vs\.?)?$/i.test(text(d.children[1]).replace(/[\d\s]/g, '')) // "4 vs. 4" (header) or "4 4" (scoreboard)
+      && hasTeam(d.children[0]) && hasTeam(d.children[2]));
+    lines.forEach((line, i) => {
+      setAttr(line, 'data-ym-line', i === 0 ? 'head' : 'row');
+      ['a', 'mid', 'b'].forEach((box, j) => setAttr(line.children[j], 'data-ym-box', box));
+    });
+  }
+
   function matchupSides() {
-    const cols = $$('#matchup-header .Grid-u-1-3');
-    const sideOf = col => {
-      const link = col && $$('a', col).find(a => /^\/nba\/\d+\/\d+$/.test(pathOf(a)) && text(a));
-      return link ? { id: teamIdOf(link), name: text(link) } : null;
-    };
-    return { a: sideOf(cols[0]), b: sideOf(cols[2]) };
+    const head = $('[data-ym-line="head"]') || $('#matchup-header');
+    const links = head ? $$('a', head).filter(isTeamLink) : [];
+    const side = link => (link ? { id: teamIdOf(link), name: text(link) } : null);
+    return { a: side(links[0]), b: links.length > 1 ? side(links[links.length - 1]) : null };
+  }
+
+  // Find a table by its last header row's labels.
+  function findTable(test) {
+    return $$('#yspmaincontent table').find(t => {
+      const slots = t.tHead && headerSlots(t);
+      return slots && test(slots.map(s => s.label.toLowerCase()));
+    });
   }
 
   // Category totals: keep the 9 scoring categories; Yahoo marks each winner in bold.
   function enhanceCategories() {
-    const table = $('#matchup-wall-header table');
+    const table = findTable(labels => labels[0] === 'team' && labels.includes('fg%'));
     const slots = table && headerSlots(table);
     if (!slots) return;
-    table.classList.add('ym-cats');
+    tagTable(table, 'cats');
     markCells(table, slots.map(s => ({
       kind: /^team$/i.test(s.label) ? 'team' : CATS.includes(s.label.toUpperCase()) ? 'stat' : 'hide',
     })));
@@ -1217,7 +1303,7 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
   // Both rosters share one table: team A's columns, a shared slot "Pos" column,
   // then team B's columns. Show one team at a time with the same row layout as My Team.
   function enhanceMatchupRoster(sides) {
-    const table = $$('#yspmaincontent table[id^="statTable"]').find(t => t.tHead);
+    const table = findTable(labels => labels.filter(l => l === 'player').length === 2 && labels.includes('pos'));
     const slots = table && headerSlots(table);
     if (!slots) return;
     const center = slots.findIndex(s => /^pos$/i.test(s.label) && !s.hidden);
@@ -1229,7 +1315,8 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
       if (CATS.includes(s.label.toUpperCase())) return { kind: 'stat', side };
       return { kind: 'hide' };
     }));
-    table.classList.add('ym-roster', 'ym-mu-roster');
+    tagTable(table, 'roster');
+    tagTable(table, 'mu');
     table.style.setProperty('--ym-n', String(slots.filter((s, i) => i < center && CATS.includes(s.label.toUpperCase())).length || 9));
 
     // Day tabs are full page loads; keep showing the same team (this browser session only).
@@ -1242,8 +1329,10 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
     }
     setAttr(table, 'data-ym-show', matchupSide);
 
+    // Goes right above the table's scroll box (#matchup on the React page).
+    const anchor = table.closest('#matchup') || table.closest('div, section');
     let toggle = $('#ym-sides');
-    if (!toggle || toggle.nextElementSibling !== table.closest('div, section')) {
+    if (!toggle || toggle.nextElementSibling !== anchor) {
       toggle?.remove();
       const show = side => {
         matchupSide = side;
@@ -1253,18 +1342,19 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
       toggle = el('div', { id: 'ym-sides', class: 'ym-seg', role: 'tablist' }, ...['a', 'b'].map(side =>
         el('button', { type: 'button', role: 'tab', 'data-side': side, onclick: () => show(side) },
           sides[side] ? sides[side].name : side.toUpperCase())));
-      table.closest('div, section').before(toggle);
+      anchor.before(toggle);
     }
     for (const b of toggle.children) setAttr(b, 'aria-selected', String(b.dataset.side === matchupSide));
   }
 
   function enhanceMatchup() {
+    markMatchupLines();
     const sides = matchupSides();
     // Remember my opponent when this is my matchup, so team pages can highlight them.
     const own = ownTeamId();
     if (own && sides.a && sides.b && [sides.a.id, sides.b.id].includes(own)) {
       const saved = readJSON(LEAGUE_KEY, {});
-      const next = { ...saved, own, opp: sides.a.id === own ? sides.b.id : sides.a.id, mu: location.pathname + location.search };
+      const next = { ...saved, own, opp: sides.a.id === own ? sides.b.id : sides.a.id };
       if (JSON.stringify(next) !== JSON.stringify(saved)) writeJSON(LEAGUE_KEY, next);
     }
     enhanceCategories();
@@ -1276,7 +1366,7 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
     const own = ownTeamId();
     if (!own) return;
     const ownPath = `/nba/${leagueId}/${own}`;
-    for (const row of $$('#standingstable tbody tr, #matchupweek li')) {
+    for (const row of $$('#standingstable tbody tr, #matchupweek li, [data-ym-line="row"]')) {
       row.classList.toggle('ym-mine', $$('a', row).some(a => pathOf(a) === ownPath));
     }
   }
@@ -1312,7 +1402,8 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
       return 'hide';
     });
     markCells(table, kinds.map(kind => ({ kind: kind === 'opp' ? 'hide' : kind })));
-    table.classList.add('ym-roster', 'ym-fa');
+    tagTable(table, 'roster');
+    tagTable(table, 'fa');
     table.style.setProperty('--ym-n', String(kinds.filter(k => k === 'stat').length || 9));
 
     // Show the opponent next to the name when Yahoo has no game-status text.

@@ -39,6 +39,9 @@ Target setup: Firefox for Android + Violentmonkey + uBlock Origin, "Desktop site
 - Rosters one team at a time, with a toggle; same row layout as My Team. The toggle opens on
   your team, and remembers your pick while you switch days
 - League scoreboard at the bottom: one aligned line per matchup (logo, name, record, score)
+- Yahoo currently serves two versions of this page (the older one and a newer React "Live"
+  layout with Today's Stats / Matchup Totals); both are handled. The newer one's league
+  scoreboard lines haven't been seen on screen yet
 
 ## What works on the Players page
 
