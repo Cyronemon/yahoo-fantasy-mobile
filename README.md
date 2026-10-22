@@ -38,6 +38,8 @@ Target setup: Firefox for Android + Violentmonkey + uBlock Origin, "Desktop site
   team (marked by logo), each category's winner highlighted
 - Rosters one team at a time, with a toggle; same row layout as My Team. The toggle opens on
   your team, and remembers your pick while you switch days
+- "Today's Stats | Matchup Totals" switch above the rosters (on the older version it links to
+  Yahoo's day tabs; "today" is the US Eastern game day, rolled over at 6 AM Eastern)
 - League scoreboard at the bottom: one aligned line per matchup (logo, name, record, score)
 - Yahoo currently serves two versions of this page (the older one and a newer React "Live"
   layout with Today's Stats / Matchup Totals); both are handled. The newer one's league

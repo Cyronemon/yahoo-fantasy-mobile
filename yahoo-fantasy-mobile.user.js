@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Yahoo Fantasy Basketball – Mobile
 // @namespace    https://github.com/Cyronemon/yahoo-fantasy-mobile
-// @version      0.5.1
+// @version      0.5.2
 // @description  Compact phone layout for the Yahoo Fantasy Basketball desktop site. Restyles Yahoo's own page; no API calls, no background fetches.
 // @homepageURL  https://github.com/Cyronemon/yahoo-fantasy-mobile
 // @updateURL    https://raw.githubusercontent.com/Cyronemon/yahoo-fantasy-mobile/main/yahoo-fantasy-mobile.user.js
@@ -468,6 +468,15 @@ html.ym-on #matchupweek .Grid-table .Grid-u-1-4 { display: block !important; wid
 html.ym-on #matchupweek .Grid-table .Ell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px !important; }
 html.ym-on #matchupweek .Grid-table .Fz-lg { font-size: 17px !important; font-weight: 700; }
 html.ym-on #matchupweek .Grid-table img { width: 30px !important; height: 30px !important; display: block; }
+
+/* "Today's Stats | Matchup Totals" (older matchup page; links to Yahoo's day tabs) */
+#ym-period { display: none; }
+html.ym-on #ym-period { display: flex; justify-content: center; gap: 6px; margin: 12px 8px 0; }
+#ym-period a {
+  padding: 6px 12px; border: 1px solid var(--ym-line); border-radius: 15px;
+  font-size: 12px; color: inherit !important; text-decoration: none !important; white-space: nowrap;
+}
+#ym-period a[aria-current] { background: var(--ym-accent); border-color: transparent; color: #fff !important; }
 
 /* team toggle above the rosters */
 html.ym-on #ym-sides { display: flex; margin: 12px 8px 6px; border: 1px solid var(--ym-line); border-radius: 10px; overflow: hidden; }
@@ -1347,6 +1356,33 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
     for (const b of toggle.children) setAttr(b, 'aria-selected', String(b.dataset.side === matchupSide));
   }
 
+  // NBA game day in US Eastern time, rolled back 6 hours so last night's games
+  // stay "today" until morning (matches what Yahoo's new Today's Stats shows).
+  function fantasyToday() {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' })
+      .format(new Date(Date.now() - 6 * 3600e3)); // "2026-10-21"
+  }
+
+  // The older matchup page has no "Today's Stats | Matchup Totals" switch (the new
+  // React one does). Add one above the team toggle, pointing at Yahoo's own day tabs.
+  function ensurePeriodSwitch() {
+    const toggle = $('#ym-sides');
+    const existing = $('#ym-period');
+    if (!toggle || $('#redzone .RedZone ul a')) { existing?.remove(); return; }
+    const tabs = $$('.moduletabs a').map(a => ({ a, date: new URL(a.href, location.href).searchParams.get('date') }));
+    const totals = tabs.find(t => t.date === 'totals');
+    const today = tabs.find(t => t.date === fantasyToday());
+    if (!totals && !today) { existing?.remove(); return; }
+    const selected = tabs.find(t => t.a.closest('li')?.classList.contains('Selected'));
+    const item = (tab, label) => tab && el('a', {
+      href: tab.a.getAttribute('href'), 'aria-current': selected === tab ? 'true' : null,
+    }, label);
+    const sw = el('div', { id: 'ym-period' }, item(today, "Today's Stats"), item(totals, 'Matchup Totals'));
+    if (existing && existing.nextElementSibling === toggle && existing.innerHTML === sw.innerHTML) return;
+    existing?.remove();
+    toggle.before(sw);
+  }
+
   function enhanceMatchup() {
     markMatchupLines();
     const sides = matchupSides();
@@ -1359,6 +1395,7 @@ html.ym-on #player-note-content [id*="-LREC"] { display: none !important; }
     }
     enhanceCategories();
     enhanceMatchupRoster(sides);
+    ensurePeriodSwitch();
   }
 
   // Highlight my team's row in the standings and the week's matchups list.
